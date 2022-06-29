@@ -1,5 +1,5 @@
 [v] Double Q-Learning
-[x] Prioritized replay
+[v] Prioritized replay
 [x] Dueling networks
 [x] Multi-step Learning
 [x] Noisy networks
