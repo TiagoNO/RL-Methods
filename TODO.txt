@@ -1,0 +1,7 @@
+[v] Double Q-Learning
+[x] Prioritized replay
+[x] Dueling networks
+[x] Multi-step Learning
+[x] Noisy networks
+[x] Distributional RL
+[x] Boltzmann Softmax DQN
