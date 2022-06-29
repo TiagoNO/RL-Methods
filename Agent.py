@@ -24,42 +24,60 @@ class Agent:
     def getAction(self, state, deterministic=True):
         pass
 
-    def train(self, env, n_episodes):
-        scores = []
+    def print(self):
+        print("|" + "=" * 44 + "|")
+        print("|Agent\t|".format(self.num_episodes+1).expandtabs(45))
+        print("|Episode {}/{}\t|".format(self.num_episodes+1, self.total_episodes).expandtabs(45))
+        print("|Time steps {}\t|".format(self.num_timesteps).expandtabs(45))
+        print("|Episode Score {}\t|".format(self.scores[self.num_episodes]).expandtabs(45))
+        print("|Avg score {}\t|".format(round(np.mean(self.scores[0:self.num_episodes+1]), 2)).expandtabs(45))
+        print("|" + "=" * 44 + "|")
 
-        steps = 0
-        for i in range(n_episodes):
+    def train(self, env, n_episodes):
+        self.scores = np.zeros(n_episodes, dtype=np.float32)
+        self.num_timesteps = 0
+        self.num_episodes = 0
+        self.total_episodes = n_episodes
+
+        for self.num_episodes in range(self.total_episodes):
             obs = env.reset()
             done = False
             score = 0
             self.beginEpisode(obs)
             while not done:
                 action = self.getAction(obs)
-                # print(action)
                 obs_, reward, done, info = env.step(action)
                 self.update(obs, action, reward, done, obs_, info)
                 score += reward
                 obs = obs_     
-                steps += 1
-            scores.append(score)
-            print("Episode {} - timesteps {} - score {} - avg score {}".format(i+1, steps, np.round(score, 2), np.mean(scores)))
+                self.num_timesteps += 1
+            self.scores[self.num_episodes] = score
+            print("\n\n")
+            self.print()
             self.endEpisode()
-        return scores
 
     def test(self, env, n_episodes):
-        scores = []
-        for i in range(n_episodes):
+        self.total_test_episodes = n_episodes
+        self.num_test_episodes = 0
+
+        self.test_scores = np.zeros(n_episodes, dtype=np.float32)
+
+        for self.num_test_episodes in range(self.total_test_episodes):
             obs = env.reset()
             done = False
+            score = 0
             while not done:
                 action = self.getAction(obs, deterministic=True)
                 obs, reward, done, _ = env.step(action)
                 score += reward
                 env.render()   
-            scores.append(score)
-            print("Episode {} - score {} - avg score {}".format(i+1, np.round(score, 2), np.mean(scores[-200:])))
-        return scores
-
+            self.test_scores[self.num_test_episodes] = score
+            print("|" + "=" * 44 + "|")
+            print("|Agent\t|".format(self.num_episodes+1).expandtabs(45))
+            print("|Episode {}/{}\t|".format(self.num_test_episodes+1, self.total_test_episodes).expandtabs(45))
+            print("|Episode Score {}\t|".format(score).expandtabs(45))
+            print("|Avg score {}\t|".format(round(np.mean(self.test_scores[0:self.num_test_episodes+1]), 2)).expandtabs(45))
+            print("|" + "=" * 44 + "|")
     @abstractclassmethod
     def save(self, filename):
         pass
