@@ -4,6 +4,7 @@ import torch.optim as optim
 import torch.nn.functional as F
 import torchinfo
 
+
 def make_network(achitecture, input_dim, output_dim):
     activation = achitecture['activation_fn']
     net_arch = achitecture['net_arch']
@@ -26,15 +27,15 @@ class Model(nn.Module):
         self.device = device
         self.input_dim = input_dim
 
-        arch = {'net_arch':[256, 256, 256], 'activation_fn':nn.ReLU}
+        arch = {'net_arch':[24, 24], 'activation_fn':nn.ReLU}
         self.q_net = make_network(arch, input_dim, action_dim).to(device)
         self.target_net = make_network(arch, input_dim, action_dim).to(device)
 
-        self.loss_func = nn.SmoothL1Loss()
-        self.optimizer = optim.RMSprop(self.parameters(), lr=self.learning_rate)
+        self.loss_func = nn.MSELoss(reduction='none')
+        self.optimizer = optim.Adam(self.q_net.parameters(), lr=self.learning_rate)
 
     def __str__(self) -> str:
-        return torchinfo.summary(self.q_net, self.action_dim, device=self.device)
+        return torchinfo.summary(self.q_net, self.input_dim, device=self.device).__str__()
 
     def q_values(self, state):
         return self.q_net(state)

@@ -15,6 +15,7 @@ class DQNAgent (Agent):
                     target_network_sync_freq, device='cpu'):
 
         self.model = Model(input_dim, action_dim, learning_rate, device)
+        print(self.model)
         
         self.input_dim = input_dim
         self.action_dim = action_dim
@@ -52,16 +53,26 @@ class DQNAgent (Agent):
     def updateEpsilon(self):
         self.epsilon = max(self.final_epsilon, self.epsilon - self.epsilon_decay)
 
-    def step(self):
-        self.model.train(True)
+    def calculate_loss(self):
         samples = self.exp_buffer.sample(self.batch_size)
 
+        # calculating q-values for states
         states_action_values = self.model.q_values(samples.states).gather(1, samples.actions.unsqueeze(-1)).squeeze(-1)
+
+        # using no grad to avoid updating the target network
         with th.no_grad():
+
+            # getting the maximum q-values for next states (using the target network)
             next_states_values = self.model.q_target(samples.next_states).max(1)[0]
+
+            # Calculating the target values (Q(s_next, a) = 0 if state is terminal)
             expected_state_action_values = samples.rewards + ((~samples.dones) * self.gamma * next_states_values)
 
-        loss = self.model.loss_func(states_action_values, expected_state_action_values)
+        return self.model.loss_func(states_action_values, expected_state_action_values).mean()
+
+    def step(self):
+        self.model.train(True)
+        loss = self.calculate_loss()
         self.model.optimizer.zero_grad()
         self.losses.append(loss.item())
         loss.backward()
@@ -71,7 +82,7 @@ class DQNAgent (Agent):
         #     param_norm = p.grad.data.norm(2)
         #     total_norm += param_norm.item() ** 2
         # total_norm = total_norm ** (1. / 2)
-
+        # print(total_norm)
 
         th.nn.utils.clip_grad_norm_(self.model.parameters(), 1)
         self.model.optimizer.step()
@@ -80,15 +91,17 @@ class DQNAgent (Agent):
         self.exp_buffer.add(state, action, reward, done, next_state)
         self.updateEpsilon()
         self.step()
-        self.num_timesteps += 1
 
         if self.num_timesteps % self.target_network_sync_freq == 0:
             self.sync()
 
-
-    def endEpisode(self):
-        print("     - Epsilon: {}".format(self.epsilon))
-        print("     - Steps until sync: {}".format(self.target_network_sync_freq - (self.num_timesteps % self.target_network_sync_freq)))
+    def print(self):
+        super().print()
+        print("|     - Learning rate: {}\t|".format(self.learning_rate).expandtabs(45))
+        print("|     - Epsilon: {}\t|".format(self.epsilon).expandtabs(45))
+        print("|     - Steps until sync: {}\t|".format(self.target_network_sync_freq - (self.num_timesteps % self.target_network_sync_freq)).expandtabs(45))
+        print("|     - Avg loss: {}\t|".format(np.mean(self.losses[-30:])).expandtabs(45))
+        print("|" + "=" * 44 + "|")
 
     def sync(self):
         print("Sync target network...")
