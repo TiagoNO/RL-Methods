@@ -93,7 +93,7 @@ class DQNAgent (Agent):
         self.step()
 
         if self.num_timesteps % self.target_network_sync_freq == 0:
-            self.sync()
+            self.model.sync()
 
     def print(self):
         super().print()
@@ -102,14 +102,10 @@ class DQNAgent (Agent):
         print("|     - Steps until sync: {}\t|".format(self.target_network_sync_freq - (self.num_timesteps % self.target_network_sync_freq)).expandtabs(45))
         print("|     - Avg loss: {}\t|".format(np.mean(self.losses[-30:])).expandtabs(45))
         print("|" + "=" * 44 + "|")
-
-    def sync(self):
-        print("Sync target network...")
-        self.model.target_net.load_state_dict(self.model.q_net.state_dict())
                 
     def save(self, file):
         th.save(self.model.q_net.state_dict(), file)
         
     def load(self, file):
         self.model.q_net.load_state_dict(th.load(file))
-        self.sync() 
+        self.model.sync() 
