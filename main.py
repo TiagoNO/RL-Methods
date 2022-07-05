@@ -3,6 +3,8 @@ from QLearning.QLearningAgent import QLearningAgent, DoubleQLearningAgent
 from DQN.DQNAgent import DQNAgent
 from DDQN.DoubleDQNAgent import DoubleDQNAgent
 from PrioritizedDQN.PrioritizedDQN import PrioritizedDQN
+from DuelingDQN.DuelingDQNAgent import DuelingDQNAgent
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -28,8 +30,8 @@ if __name__ == '__main__':
 
     # env = gym.make(env_name)
     # qAgent = QLearningAgent(env.action_space.n, lr=.5, discount=.99, initial_epsilon=1, final_epsilon=.1, epsilon_decay=1e-5)
-    # q_scores = qAgent.train(env, n_episodes)
-    # generate_graph("tabular_qlearning", q_scores, plot_every)
+    # qAgent.train(env, n_episodes)
+    # generate_graph("tabular_qlearning", qAgent.scores, plot_every)
 
     # env = gym.make(env_name)
     # doubleQAgent = DoubleQLearningAgent(env.action_space.n, lr=.5, discount=.99, initial_epsilon=1, final_epsilon=.1 ,epsilon_decay=1e-5)
@@ -53,21 +55,21 @@ if __name__ == '__main__':
     # deepqAgent.train(env, n_episodes)
     # generate_graph("dqn_", deepqAgent.scores, plot_every)
 
-    env = gym.make(env_name)
-    deepqAgent = DoubleDQNAgent(
-                        env.observation_space.shape,
-                        env.action_space.n,
-                        initial_epsilon=1.0,
-                        final_epsilon=0.05,
-                        epsilon_decay=1e-5,
-                        learning_rate=.001,
-                        gamma=.9,
-                        batch_size=32,
-                        experience_buffer_size=1e6,
-                        target_network_sync_freq=2000,
-                        device='cpu'
-                            )
-    doubledeepq_scores = deepqAgent.train(env, n_episodes)
+    # env = gym.make(env_name)
+    # deepqAgent = DoubleDQNAgent(
+    #                     env.observation_space.shape,
+    #                     env.action_space.n,
+    #                     initial_epsilon=1.0,
+    #                     final_epsilon=0.05,
+    #                     epsilon_decay=1e-5,
+    #                     learning_rate=.001,
+    #                     gamma=.9,
+    #                     batch_size=32,
+    #                     experience_buffer_size=1e6,
+    #                     target_network_sync_freq=2000,
+    #                     device='cpu'
+    #                         )
+    # doubledeepq_scores = deepqAgent.train(env, n_episodes)
     # generate_graph("double_dqn", doubledeepq_scores, plot_every)
 
     # env = gym.make(env_name)
@@ -89,3 +91,21 @@ if __name__ == '__main__':
     #                     )
     # prioritizedDQNAgent.train(env, n_episodes)
     # generate_graph("prioritized_dqn", prioritizedDQNAgent.scores, plot_every)
+
+    
+    env = gym.make(env_name)
+    duelingDQNAgent = DuelingDQNAgent(
+                        env.observation_space.shape,
+                        env.action_space.n,
+                        initial_epsilon=1.0,
+                        final_epsilon=0.05,
+                        epsilon_decay=1e-5,
+                        learning_rate=.01,
+                        gamma=.9,
+                        batch_size=32,
+                        experience_buffer_size=1e6,
+                        target_network_sync_freq=2000,
+                        device='cpu'
+                        )
+    duelingDQNAgent.train(env, n_episodes)
+    generate_graph("prioritized_dqn", duelingDQNAgent.scores, plot_every)    
