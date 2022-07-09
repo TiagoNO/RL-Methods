@@ -10,9 +10,19 @@ from Buffers.ExperienceBuffer import ExperienceBuffer
 
 class DQNAgent (Agent):
 
-    def __init__(self, input_dim, action_dim, initial_epsilon, final_epsilon, epsilon_decay,
-                    learning_rate, gamma, batch_size, experience_buffer_size,
-                    target_network_sync_freq, device='cpu'):
+    def __init__(self, 
+                    input_dim, 
+                    action_dim, 
+                    initial_epsilon, 
+                    final_epsilon, 
+                    epsilon_decay,
+                    learning_rate, 
+                    gamma, 
+                    batch_size, 
+                    experience_buffer_size,
+                    target_network_sync_freq, 
+                    device='cpu'
+                ):
 
         self.model = Model(input_dim, action_dim, learning_rate, device)
         print(self.model)

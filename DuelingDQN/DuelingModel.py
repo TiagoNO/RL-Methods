@@ -17,7 +17,7 @@ class DuelingModel(nn.Module):
         self.device = device
         self.input_dim = input_dim
 
-        arch = {'feature_arch':[24], 'value_arch':[24], 'advantage_arch':[24], 'activation_fn':nn.ReLU}
+        arch = {'feature_arch':[5, 5], 'value_arch':[5, 5], 'advantage_arch':[5, 5], 'activation_fn':nn.ReLU}
         
         self.features_extractor = self.make_feature_extractor(arch, device)
         self.value_net, self.advantage_net = self.make_network(arch, device)

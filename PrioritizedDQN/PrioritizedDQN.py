@@ -4,7 +4,20 @@ import torch as th
 
 class PrioritizedDQN(DQNAgent):
 
-    def __init__(self, input_dim, action_dim, initial_epsilon, final_epsilon, epsilon_decay, learning_rate, gamma, batch_size, experience_buffer_size, target_network_sync_freq, experience_prob_alpha, experience_beta, experience_beta_decay, device='cpu'):
+    def __init__(self, input_dim, 
+                       action_dim, 
+                       initial_epsilon, 
+                       final_epsilon, 
+                       epsilon_decay, 
+                       learning_rate, 
+                       gamma, 
+                       batch_size, 
+                       experience_buffer_size, 
+                       target_network_sync_freq, 
+                       experience_prob_alpha, 
+                       experience_beta, 
+                       experience_beta_decay, 
+                       device='cpu'):
         super().__init__(input_dim, action_dim, initial_epsilon, final_epsilon, epsilon_decay, learning_rate, gamma, batch_size, experience_buffer_size, target_network_sync_freq, device)
         self.exp_buffer = PrioritizedReplayBuffer(experience_buffer_size, input_dim, device, experience_prob_alpha)
         self.beta = experience_beta
