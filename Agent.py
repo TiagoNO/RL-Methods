@@ -30,7 +30,7 @@ class Agent:
         print("|Episode {}/{}\t|".format(self.num_episodes+1, self.total_episodes).expandtabs(45))
         print("|Time steps {}\t|".format(self.num_timesteps).expandtabs(45))
         print("|Episode Score {}\t|".format(self.scores[self.num_episodes]).expandtabs(45))
-        print("|Avg score {}\t|".format(round(np.mean(self.scores[0:self.num_episodes+1]), 2)).expandtabs(45))
+        print("|Avg score {}\t|".format(round(np.mean(self.scores[max(0, self.num_episodes-100):self.num_episodes+1]), 2)).expandtabs(45))
         print("|" + "=" * 44 + "|")
 
     def train(self, env, n_episodes):
