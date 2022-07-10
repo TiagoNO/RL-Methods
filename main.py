@@ -4,6 +4,9 @@ from DQN.DQNAgent import DQNAgent
 from DDQN.DoubleDQNAgent import DoubleDQNAgent
 from PrioritizedDQN.PrioritizedDQN import PrioritizedDQN
 from DuelingDQN.DuelingDQNAgent import DuelingDQNAgent
+from Rainbow.RainbowAgent import RainbowAgent
+from MultiStepDQN.MultiStepDQNAgent import MultiStepDQNAgent
+from NoisyNetDQN.NoisyNetDQNAgent import NoisyNetDQNAgent
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -93,8 +96,43 @@ if __name__ == '__main__':
     # generate_graph("prioritized_dqn", prioritizedDQNAgent.scores, plot_every)
 
     
+    # env = gym.make(env_name)
+    # duelingDQNAgent = DuelingDQNAgent(
+    #                     env.observation_space.shape,
+    #                     env.action_space.n,
+    #                     initial_epsilon=1.0,
+    #                     final_epsilon=0.05,
+    #                     epsilon_decay=1e-5,
+    #                     learning_rate=.01,
+    #                     gamma=.9,
+    #                     batch_size=32,
+    #                     experience_buffer_size=1e6,
+    #                     target_network_sync_freq=2000,
+    #                     device='cpu'
+    #                     )
+    # duelingDQNAgent.train(env, n_episodes)
+    # generate_graph("prioritized_dqn", duelingDQNAgent.scores, plot_every)
+
+    # env = gym.make(env_name)
+    # multistepDQNAgent = MultiStepDQNAgent(
+    #                     env.observation_space.shape,
+    #                     env.action_space.n,
+    #                     initial_epsilon=1.0,
+    #                     final_epsilon=0.05,
+    #                     epsilon_decay=1e-5,
+    #                     learning_rate=.01,
+    #                     gamma=.9,
+    #                     batch_size=32,
+    #                     experience_buffer_size=1e6,
+    #                     target_network_sync_freq=2000,
+    #                     trajectory_steps=4,
+    #                     device='cpu'
+    #                     )
+    # multistepDQNAgent.train(env, n_episodes)
+    # generate_graph("prioritized_dqn", multistepDQNAgent.scores, plot_every)
+
     env = gym.make(env_name)
-    duelingDQNAgent = DuelingDQNAgent(
+    noisyDQNAgent = NoisyNetDQNAgent(
                         env.observation_space.shape,
                         env.action_space.n,
                         initial_epsilon=1.0,
@@ -105,7 +143,32 @@ if __name__ == '__main__':
                         batch_size=32,
                         experience_buffer_size=1e6,
                         target_network_sync_freq=2000,
+                        sigma_init=.9,
                         device='cpu'
                         )
-    duelingDQNAgent.train(env, n_episodes)
-    generate_graph("prioritized_dqn", duelingDQNAgent.scores, plot_every)    
+    noisyDQNAgent.train(env, n_episodes)
+    generate_graph("prioritized_dqn", noisyDQNAgent.scores, plot_every)
+
+    # env = gym.make(env_name)
+    # rainbowAgent = RainbowAgent(
+    #                     env.observation_space.shape,
+    #                     env.action_space.n,
+    #                     initial_epsilon=1.0,
+    #                     final_epsilon=0.05,
+    #                     epsilon_decay=1e-5,
+    #                     learning_rate=.01,
+    #                     gamma=.9,
+    #                     batch_size=32,
+    #                     experience_buffer_size=1e6,
+    #                     target_network_sync_freq=2000,
+    #                     experience_prob_alpha=0.6,
+    #                     experience_beta=0.4,
+    #                     experience_beta_decay=1e-6,
+    #                     trajectory_steps=4,
+    #                     initial_sigma=.9,
+    #                     device='cpu'
+    #                     )
+    # rainbowAgent.train(env, n_episodes)
+    # generate_graph("prioritized_dqn", rainbowAgent.scores, plot_every)
+
+    
