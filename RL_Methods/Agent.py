@@ -34,7 +34,7 @@ class Agent:
 
     def print(self):
         print("|" + "=" * 44 + "|")
-        print("|Agent\t|".format(self.num_episodes+1).expandtabs(45))
+        print("|Agent\t|".expandtabs(45))
         print("|Episode {}/{}\t|".format(self.num_episodes+1, self.total_episodes).expandtabs(45))
         print("|Time steps {}\t|".format(self.num_timesteps).expandtabs(45))
         print("|Episode Score {}\t|".format(self.scores[self.num_episodes]).expandtabs(45))

@@ -1,3 +1,4 @@
+from tabnanny import check
 from RL_Methods.DQN.DQNAgent import DQNAgent
 from RL_Methods.NoisyNetDQN.NoisyModel import NoisyModel
 import torch as th
@@ -17,10 +18,15 @@ class NoisyNetDQNAgent(DQNAgent):
                     experience_buffer_size, 
                     target_network_sync_freq,
                     sigma_init,
+                    checkpoint_freq,
+                    savedir,
+                    log_freq,
                     device='cpu'
                 ):
                 
-        super().__init__(input_dim, action_dim, initial_epsilon, final_epsilon, epsilon_decay, learning_rate, gamma, batch_size, experience_buffer_size, target_network_sync_freq, device)
+        super().__init__(input_dim, action_dim, initial_epsilon, final_epsilon, 
+                        epsilon_decay, learning_rate, gamma, batch_size, experience_buffer_size, 
+                        target_network_sync_freq, checkpoint_freq, savedir, log_freq, device)
         self.model = NoisyModel(input_dim, action_dim, learning_rate, sigma_init, device)
         self.epsilon = 0
         self.final_epsilon = 0

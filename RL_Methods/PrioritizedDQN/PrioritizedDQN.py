@@ -1,3 +1,4 @@
+from tabnanny import check
 from RL_Methods.DQN.DQNAgent import DQNAgent
 from RL_Methods.Buffers.PrioritizedReplayBuffer import PrioritizedReplayBuffer
 import torch as th
@@ -17,8 +18,13 @@ class PrioritizedDQN(DQNAgent):
                        experience_prob_alpha, 
                        experience_beta, 
                        experience_beta_decay, 
+                       checkpoint_freq,
+                       savedir,
+                       log_freq,
                        device='cpu'):
-        super().__init__(input_dim, action_dim, initial_epsilon, final_epsilon, epsilon_decay, learning_rate, gamma, batch_size, experience_buffer_size, target_network_sync_freq, device)
+        super().__init__(input_dim, action_dim, initial_epsilon, final_epsilon, 
+                        epsilon_decay, learning_rate, gamma, batch_size, experience_buffer_size, 
+                        target_network_sync_freq, checkpoint_freq, savedir, log_freq, device)
         self.exp_buffer = PrioritizedReplayBuffer(experience_buffer_size, input_dim, device, experience_prob_alpha)
         self.beta = experience_beta
         self.beta_decay = experience_beta_decay

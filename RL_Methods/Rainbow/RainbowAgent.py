@@ -24,11 +24,14 @@ class RainbowAgent(DQNAgent):
                        experience_beta_decay,
                        trajectory_steps,
                        initial_sigma,
-                       checkpoint_freq=50000,
-                       savedir="",
+                       checkpoint_freq,
+                       savedir,
+                       log_freq,
                        device='cpu'):
 
-        super().__init__(input_dim, action_dim, initial_epsilon, final_epsilon, epsilon_decay, learning_rate, gamma, batch_size, experience_buffer_size, target_network_sync_freq, checkpoint_freq, savedir, device)
+        super().__init__(input_dim, action_dim, initial_epsilon, final_epsilon, 
+                        epsilon_decay, learning_rate, gamma, batch_size, experience_buffer_size, 
+                        target_network_sync_freq, checkpoint_freq, savedir, log_freq, device)
         self.model = RainbowModel(input_dim, action_dim, learning_rate, initial_sigma, device)
         self.exp_buffer = PrioritizedReplayBuffer(experience_buffer_size, input_dim, device, experience_prob_alpha)
         self.beta = experience_beta

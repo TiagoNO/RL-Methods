@@ -165,6 +165,9 @@ if __name__ == '__main__':
                         experience_beta_decay=1e-6,
                         trajectory_steps=4,
                         initial_sigma=.9,
+                        checkpoint_freq=10000,
+                        savedir="experiments/rainbow/",
+                        log_freq=1,
                         device='cpu'
                         )
     rainbowAgent.train(env, n_episodes)

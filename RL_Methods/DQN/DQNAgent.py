@@ -1,7 +1,6 @@
 import numpy as np
-import matplotlib.pyplot as plt
-
 import torch as th
+import pickle
 
 from RL_Methods.Agent import Agent
 from RL_Methods.DQN.Model import Model
@@ -22,6 +21,7 @@ class DQNAgent (Agent):
                     target_network_sync_freq, 
                     checkpoint_freq=50000,
                     savedir="",
+                    log_freq=1,
                     device='cpu'
                 ):
 
@@ -38,11 +38,13 @@ class DQNAgent (Agent):
         self.batch_size = batch_size
         self.savedir = savedir
         self.checkpoint_freq = checkpoint_freq
+        self.log_freq = log_freq
 
         self.exp_buffer = ExperienceBuffer(experience_buffer_size, self.input_dim, device)
         self.num_timesteps = 0
         self.losses = []
         self.target_network_sync_freq = target_network_sync_freq
+        # self.load(savedir + "dqn_current.pt")
 
     @th.no_grad()
     def getAction(self, state, mask=None, deterministic=False):
@@ -103,6 +105,9 @@ class DQNAgent (Agent):
     def endEpisode(self):
         self.save(self.savedir + "dqn_current.pt")
 
+        if self.num_timesteps % self.log_freq == 0:
+            self.logData()
+
     def endTrainning(self):
         self.save(self.savedir + "dqn_last.pt")
 
@@ -124,9 +129,29 @@ class DQNAgent (Agent):
         print("|     - Steps until sync: {}\t|".format(self.target_network_sync_freq - (self.num_timesteps % self.target_network_sync_freq)).expandtabs(45))
         print("|     - Avg loss: {}\t|".format(np.mean(self.losses[-30:])).expandtabs(45))
         print("|" + "=" * 44 + "|")
-                
+    
+
+    def logData(self):
+        log_file = open(self.savedir + "log.txt", "a")
+        log_file.write("{};".format(self.num_episodes))
+        log_file.write("{};".format(self.num_timesteps))
+        log_file.write("{};".format(np.mean(self.scores[max(0, self.num_episodes-100):self.num_episodes+1])))
+        log_file.write("{};".format(self.learning_rate))
+        log_file.write("{};".format(self.epsilon))
+        log_file.write("{};".format(self.final_epsilon))
+        log_file.write("{};".format(self.epsilon_decay))
+        log_file.write("{};".format(np.mean(self.losses[-30:])))
+        log_file.write("\n")
+
+
     def save(self, file):
         self.model.save(file)
-        
+        # pickle.dump(self.exp_buffer, open(self.savedir + "experience_buffer.txt", 'wb'))
+
     def load(self, file):
         self.model.load(file)
+        try:
+            self.exp_buffer = pickle.load(open(self.savedir + "experience_buffer.txt", 'rb'))
+        except:
+            print("Could not load Experience buffer... reseting experiences")
+            
