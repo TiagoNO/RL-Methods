@@ -149,6 +149,7 @@ class DQNAgent (Agent):
         # pickle.dump(self.exp_buffer, open(self.savedir + "experience_buffer.txt", 'wb'))
 
     def load(self, file):
+        print("Loading from: {}".format(file))
         self.model.load(file)
         try:
             self.exp_buffer = pickle.load(open(self.savedir + "experience_buffer.txt", 'rb'))

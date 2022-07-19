@@ -51,5 +51,5 @@ class Model(nn.Module):
         th.save(self.q_net.state_dict(), file)
 
     def load(self, file):
-        self.q_net.load_state_dict(th.load(file))
+        self.q_net.load_state_dict(th.load(file, map_location=th.device(self.device)))
         self.sync()

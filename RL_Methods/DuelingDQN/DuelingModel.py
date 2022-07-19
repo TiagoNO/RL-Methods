@@ -15,7 +15,7 @@ class DuelingModel(nn.Module):
         self.device = device
         self.input_dim = input_dim
 
-        arch = {'feature_arch':[128, 128], 'value_arch':[128, 128], 'advantage_arch':[128, 128], 'activation_fn':nn.ReLU}
+        arch = {'feature_arch':[128, 128], 'value_arch':[128, 64], 'advantage_arch':[128, 64], 'activation_fn':nn.ReLU}
         
         self.features_extractor = self.make_feature_extractor(arch, device)
         self.value_net, self.advantage_net = self.make_network(arch, device)
@@ -80,8 +80,8 @@ class DuelingModel(nn.Module):
 
     def __str__(self) -> str:
         features = torchinfo.summary(self.features_extractor, self.input_dim, device=self.device).__str__()
-        value = torchinfo.summary(self.value_net, 24, device=self.device).__str__()
-        advantage = torchinfo.summary(self.advantage_net, 24, device=self.device).__str__()
+        value = torchinfo.summary(self.value_net, 128, device=self.device).__str__()
+        advantage = torchinfo.summary(self.advantage_net, 128, device=self.device).__str__()
 
         return features + value + advantage
 
@@ -97,7 +97,8 @@ class DuelingModel(nn.Module):
         th.save(self.value_net.state_dict(), file + "_value_net.pt")
 
     def load(self, file):
-        self.features_extractor(th.load(file + "_feature_extractor.pt"))
-        self.advantage_net(th.load(file + "_advantage_net.pt"))
-        self.value_net(th.load(file + "_value_net.pt"))
+        # print("Loading from: {}".format(file))
+        self.features_extractor.load_state_dict(th.load(file + "_feature_extractor.pt"))
+        self.advantage_net.load_state_dict(th.load(file + "_advantage_net.pt"))
+        self.value_net.load_state_dict(th.load(file + "_value_net.pt"))
         self.sync()

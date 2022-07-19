@@ -42,10 +42,10 @@ class Agent:
         print("|" + "=" * 44 + "|")
 
     def train(self, env, n_episodes):
-        self.scores = np.zeros(n_episodes, dtype=np.float32)
+        self.total_episodes = int(n_episodes)
+        self.scores = np.zeros(self.total_episodes, dtype=np.float32)
         self.num_timesteps = 0
         self.num_episodes = 0
-        self.total_episodes = n_episodes
 
         self.beginTrainning()
         for self.num_episodes in range(self.total_episodes):
