@@ -1,12 +1,12 @@
 import gym
-from QLearning.QLearningAgent import QLearningAgent, DoubleQLearningAgent
-from DQN.DQNAgent import DQNAgent
-from DDQN.DoubleDQNAgent import DoubleDQNAgent
-from PrioritizedDQN.PrioritizedDQN import PrioritizedDQN
-from DuelingDQN.DuelingDQNAgent import DuelingDQNAgent
-from Rainbow.RainbowAgent import RainbowAgent
-from MultiStepDQN.MultiStepDQNAgent import MultiStepDQNAgent
-from NoisyNetDQN.NoisyNetDQNAgent import NoisyNetDQNAgent
+from RL_Methods.QLearning.QLearningAgent import QLearningAgent, DoubleQLearningAgent
+from RL_Methods.DQN.DQNAgent import DQNAgent
+from RL_Methods.DDQN.DoubleDQNAgent import DoubleDQNAgent
+from RL_Methods.PrioritizedDQN.PrioritizedDQN import PrioritizedDQN
+from RL_Methods.DuelingDQN.DuelingDQNAgent import DuelingDQNAgent
+from RL_Methods.Rainbow.RainbowAgent import RainbowAgent
+from RL_Methods.MultiStepDQN.MultiStepDQNAgent import MultiStepDQNAgent
+from RL_Methods.NoisyNetDQN.NoisyNetDQNAgent import NoisyNetDQNAgent
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -29,7 +29,6 @@ if __name__ == '__main__':
     plot_every = 100
     debug_every = 100
     env_name = "CartPole-v0"
-
 
     # env = gym.make(env_name)
     # qAgent = QLearningAgent(env.action_space.n, lr=.5, discount=.99, initial_epsilon=1, final_epsilon=.1, epsilon_decay=1e-5)
@@ -131,26 +130,8 @@ if __name__ == '__main__':
     # multistepDQNAgent.train(env, n_episodes)
     # generate_graph("prioritized_dqn", multistepDQNAgent.scores, plot_every)
 
-    env = gym.make(env_name)
-    noisyDQNAgent = NoisyNetDQNAgent(
-                        env.observation_space.shape,
-                        env.action_space.n,
-                        initial_epsilon=1.0,
-                        final_epsilon=0.05,
-                        epsilon_decay=1e-5,
-                        learning_rate=.01,
-                        gamma=.9,
-                        batch_size=32,
-                        experience_buffer_size=1e6,
-                        target_network_sync_freq=2000,
-                        sigma_init=.9,
-                        device='cpu'
-                        )
-    noisyDQNAgent.train(env, n_episodes)
-    generate_graph("prioritized_dqn", noisyDQNAgent.scores, plot_every)
-
     # env = gym.make(env_name)
-    # rainbowAgent = RainbowAgent(
+    # noisyDQNAgent = NoisyNetDQNAgent(
     #                     env.observation_space.shape,
     #                     env.action_space.n,
     #                     initial_epsilon=1.0,
@@ -161,14 +142,32 @@ if __name__ == '__main__':
     #                     batch_size=32,
     #                     experience_buffer_size=1e6,
     #                     target_network_sync_freq=2000,
-    #                     experience_prob_alpha=0.6,
-    #                     experience_beta=0.4,
-    #                     experience_beta_decay=1e-6,
-    #                     trajectory_steps=4,
-    #                     initial_sigma=.9,
+    #                     sigma_init=.9,
     #                     device='cpu'
     #                     )
-    # rainbowAgent.train(env, n_episodes)
-    # generate_graph("prioritized_dqn", rainbowAgent.scores, plot_every)
+    # noisyDQNAgent.train(env, n_episodes)
+    # generate_graph("prioritized_dqn", noisyDQNAgent.scores, plot_every)
+
+    env = gym.make(env_name)
+    rainbowAgent = RainbowAgent(
+                        env.observation_space.shape,
+                        env.action_space.n,
+                        initial_epsilon=1.0,
+                        final_epsilon=0.05,
+                        epsilon_decay=1e-5,
+                        learning_rate=.01,
+                        gamma=.9,
+                        batch_size=32,
+                        experience_buffer_size=1e6,
+                        target_network_sync_freq=2000,
+                        experience_prob_alpha=0.6,
+                        experience_beta=0.4,
+                        experience_beta_decay=1e-6,
+                        trajectory_steps=4,
+                        initial_sigma=.9,
+                        device='cpu'
+                        )
+    rainbowAgent.train(env, n_episodes)
+    generate_graph("prioritized_dqn", rainbowAgent.scores, plot_every)
 
     

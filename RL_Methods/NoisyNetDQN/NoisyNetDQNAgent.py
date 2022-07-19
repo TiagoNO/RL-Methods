@@ -1,5 +1,5 @@
-from DQN.DQNAgent import DQNAgent
-from NoisyNetDQN.NoisyModel import NoisyModel
+from RL_Methods.DQN.DQNAgent import DQNAgent
+from RL_Methods.NoisyNetDQN.NoisyModel import NoisyModel
 import torch as th
 import numpy as np
 

@@ -1,12 +1,11 @@
-from random import random
 import numpy as np
 import matplotlib.pyplot as plt
 
-from Agent import Agent
 import torch as th
 
-from DQN.Model import Model
-from Buffers.ExperienceBuffer import ExperienceBuffer
+from RL_Methods.Agent import Agent
+from RL_Methods.DQN.Model import Model
+from RL_Methods.Buffers.ExperienceBuffer import ExperienceBuffer
 
 class DQNAgent (Agent):
 
@@ -21,6 +20,8 @@ class DQNAgent (Agent):
                     batch_size, 
                     experience_buffer_size,
                     target_network_sync_freq, 
+                    checkpoint_freq=50000,
+                    savedir="",
                     device='cpu'
                 ):
 
@@ -35,7 +36,9 @@ class DQNAgent (Agent):
         self.learning_rate = learning_rate
         self.gamma = gamma
         self.batch_size = batch_size
-        
+        self.savedir = savedir
+        self.checkpoint_freq = checkpoint_freq
+
         self.exp_buffer = ExperienceBuffer(experience_buffer_size, self.input_dim, device)
         self.num_timesteps = 0
         self.losses = []
@@ -97,10 +100,19 @@ class DQNAgent (Agent):
         th.nn.utils.clip_grad_norm_(self.model.parameters(), 1)
         self.model.optimizer.step()
 
+    def endEpisode(self):
+        self.save(self.savedir + "dqn_current.pt")
+
+    def endTrainning(self):
+        self.save(self.savedir + "dqn_last.pt")
+
     def update(self, state, action, reward, done, next_state, info):
         self.exp_buffer.add(state, action, reward, done, next_state)
         self.updateEpsilon()
         self.step()
+
+        if self.checkpoint_freq % self.num_timesteps == 0:
+            self.save(self.savedir + "dqn_{}_steps.pt".format(self.num_timesteps))
 
         if self.num_timesteps % self.target_network_sync_freq == 0:
             self.model.sync()
@@ -114,8 +126,7 @@ class DQNAgent (Agent):
         print("|" + "=" * 44 + "|")
                 
     def save(self, file):
-        th.save(self.model.q_net.state_dict(), file)
+        self.model.save(file)
         
     def load(self, file):
-        self.model.q_net.load_state_dict(th.load(file))
-        self.model.sync() 
+        self.model.load(file)

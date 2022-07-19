@@ -4,8 +4,6 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 
-from DQN.Model import Model
-
 import itertools
 import torchinfo
 class DuelingModel(nn.Module):
@@ -17,7 +15,7 @@ class DuelingModel(nn.Module):
         self.device = device
         self.input_dim = input_dim
 
-        arch = {'feature_arch':[5, 5], 'value_arch':[5, 5], 'advantage_arch':[5, 5], 'activation_fn':nn.ReLU}
+        arch = {'feature_arch':[128, 128], 'value_arch':[128, 128], 'advantage_arch':[128, 128], 'activation_fn':nn.ReLU}
         
         self.features_extractor = self.make_feature_extractor(arch, device)
         self.value_net, self.advantage_net = self.make_network(arch, device)
@@ -65,6 +63,9 @@ class DuelingModel(nn.Module):
 
         return value_net.to(device), advantage_net.to(device)
 
+    def forward(self, state):
+        return self.q_values(state)
+
     def q_values(self, state):
         features = self.features_extractor(state)
         advantage = self.advantage_net(features)
@@ -90,3 +91,13 @@ class DuelingModel(nn.Module):
         self.target_advantage_net.load_state_dict(self.advantage_net.state_dict())
         self.target_value_net.load_state_dict(self.value_net.state_dict())
 
+    def save(self, file):
+        th.save(self.features_extractor.state_dict(), file + "_feature_extractor.pt")
+        th.save(self.advantage_net.state_dict(), file + "_advantage_net.pt")
+        th.save(self.value_net.state_dict(), file + "_value_net.pt")
+
+    def load(self, file):
+        self.features_extractor(th.load(file + "_feature_extractor.pt"))
+        self.advantage_net(th.load(file + "_advantage_net.pt"))
+        self.value_net(th.load(file + "_value_net.pt"))
+        self.sync()

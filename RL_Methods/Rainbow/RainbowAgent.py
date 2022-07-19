@@ -1,8 +1,8 @@
-from DQN.DQNAgent import DQNAgent
-from Rainbow.RainbowModel import RainbowModel
-from DuelingDQN.DuelingModel import DuelingModel
-from NoisyNetDQN.NoisyModel import NoisyModel
-from Buffers.PrioritizedReplayBuffer import PrioritizedReplayBuffer
+from RL_Methods.DQN.DQNAgent import DQNAgent
+from RL_Methods.Rainbow.RainbowModel import RainbowModel
+from RL_Methods.DuelingDQN.DuelingModel import DuelingModel
+from RL_Methods.NoisyNetDQN.NoisyModel import NoisyModel
+from RL_Methods.Buffers.PrioritizedReplayBuffer import PrioritizedReplayBuffer
 import torch as th
 import numpy as np
 
@@ -24,9 +24,11 @@ class RainbowAgent(DQNAgent):
                        experience_beta_decay,
                        trajectory_steps,
                        initial_sigma,
+                       checkpoint_freq=50000,
+                       savedir="",
                        device='cpu'):
 
-        super().__init__(input_dim, action_dim, initial_epsilon, final_epsilon, epsilon_decay, learning_rate, gamma, batch_size, experience_buffer_size, target_network_sync_freq, device)
+        super().__init__(input_dim, action_dim, initial_epsilon, final_epsilon, epsilon_decay, learning_rate, gamma, batch_size, experience_buffer_size, target_network_sync_freq, checkpoint_freq, savedir, device)
         self.model = RainbowModel(input_dim, action_dim, learning_rate, initial_sigma, device)
         self.exp_buffer = PrioritizedReplayBuffer(experience_buffer_size, input_dim, device, experience_prob_alpha)
         self.beta = experience_beta
@@ -34,9 +36,10 @@ class RainbowAgent(DQNAgent):
         self.trajectory_steps = trajectory_steps
         self.trajectory = []
 
-        # no need to exploration with e-greedy, using Noisy network
-        self.epsilon = 0
-        self.final_epsilon = 0
+        # Using Noisy network, so we dont need e-greedy search
+        # but, for cartpole, initial small epsilon helps convergence
+        self.epsilon = 0.1
+        self.final_epsilon = 0.0
 
     def calculate_loss(self):
         samples = self.exp_buffer.sample(self.batch_size)
@@ -80,15 +83,15 @@ class RainbowAgent(DQNAgent):
         if self.num_timesteps % self.target_network_sync_freq == 0:
             self.model.sync()
 
-    @th.no_grad()
-    def getAction(self, state, mask=None, deterministic=False):
-        self.model.train(True)
-        if mask is None:
-            mask = np.ones(self.action_dim, dtype=np.bool)
+    # @th.no_grad()
+    # def getAction(self, state, mask=None, deterministic=False):
+    #     self.model.train(True)
+    #     if mask is None:
+    #         mask = np.ones(self.action_dim, dtype=np.bool)
 
-        with th.no_grad():
-            mask = np.invert(mask)
-            state = th.tensor(state, dtype=th.float).to(self.model.device)
-            q_values = self.model.q_values(state)
-            q_values[mask] = -th.inf
-            return q_values.argmax().item()
+    #     with th.no_grad():
+    #         mask = np.invert(mask)
+    #         state = th.tensor(state, dtype=th.float).to(self.model.device)
+    #         q_values = self.model.q_values(state)
+    #         q_values[mask] = -th.inf
+    #         return q_values.argmax().item()

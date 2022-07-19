@@ -1,4 +1,4 @@
-from DQN.DQNAgent import DQNAgent
+from RL_Methods.DQN.DQNAgent import DQNAgent
 
 import torch as th
 

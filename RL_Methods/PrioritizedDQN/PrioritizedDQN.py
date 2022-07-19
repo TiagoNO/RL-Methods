@@ -1,5 +1,5 @@
-from DQN.DQNAgent import DQNAgent
-from Buffers.PrioritizedReplayBuffer import PrioritizedReplayBuffer
+from RL_Methods.DQN.DQNAgent import DQNAgent
+from RL_Methods.Buffers.PrioritizedReplayBuffer import PrioritizedReplayBuffer
 import torch as th
 
 class PrioritizedDQN(DQNAgent):

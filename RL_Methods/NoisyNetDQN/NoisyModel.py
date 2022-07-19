@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 import torchinfo
-from NoisyNetDQN.NoisyLinear import NoisyLinear, NoisyFactorizedLinear
+from RL_Methods.NoisyNetDQN.NoisyLinear import NoisyLinear, NoisyFactorizedLinear
 
 class NoisyModel(nn.Module):
 

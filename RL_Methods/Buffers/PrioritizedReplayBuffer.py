@@ -1,7 +1,7 @@
 import numpy as np
 import torch as th
 
-from Buffers.ExperienceBuffer import ExperienceBuffer, ExperienceSamples
+from RL_Methods.Buffers.ExperienceBuffer import ExperienceBuffer, ExperienceSamples
 
 class PrioritizedExperienceSamples(ExperienceSamples):
     def __init__(self, states, actions, rewards, dones, next_states, indices, weights, device):

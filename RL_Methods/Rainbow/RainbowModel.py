@@ -1,5 +1,5 @@
-from DuelingDQN.DuelingModel import DuelingModel
-from NoisyNetDQN.NoisyLinear import NoisyLinear, NoisyFactorizedLinear
+from RL_Methods.DuelingDQN.DuelingModel import DuelingModel
+from RL_Methods.NoisyNetDQN.NoisyLinear import NoisyLinear, NoisyFactorizedLinear
 import torch.nn as nn
 
 class RainbowModel(DuelingModel):

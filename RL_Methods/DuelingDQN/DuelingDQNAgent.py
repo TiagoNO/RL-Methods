@@ -1,5 +1,5 @@
-from DQN.DQNAgent import DQNAgent
-from DuelingDQN.DuelingModel import DuelingModel
+from RL_Methods.DQN.DQNAgent import DQNAgent
+from RL_Methods.DuelingDQN.DuelingModel import DuelingModel
 
 
 class DuelingDQNAgent(DQNAgent):

@@ -1,5 +1,4 @@
-from functools import update_wrapper
-from Agent import Agent
+from RL_Methods.Agent import Agent
 import numpy as np
 
 class QLearningAgent (Agent):

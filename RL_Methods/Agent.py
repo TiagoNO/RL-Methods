@@ -9,6 +9,14 @@ class Agent:
         pass
 
     @abstractclassmethod
+    def beginTrainning(self):
+        pass
+
+    @abstractclassmethod
+    def endTrainning(self):
+        pass
+
+    @abstractclassmethod
     def beginEpisode(self, state):
         pass
 
@@ -39,6 +47,7 @@ class Agent:
         self.num_episodes = 0
         self.total_episodes = n_episodes
 
+        self.beginTrainning()
         for self.num_episodes in range(self.total_episodes):
             obs = env.reset()
             done = False
@@ -55,6 +64,7 @@ class Agent:
             print("\n\n")
             self.print()
             self.endEpisode()
+        self.endTrainning()
 
     def test(self, env, n_episodes):
         self.total_test_episodes = n_episodes
