@@ -29,7 +29,7 @@ class Agent:
         pass
 
     @abstractclassmethod
-    def getAction(self, state, deterministic=True):
+    def getAction(self, state, deterministic=True, mask=None):
         pass
 
     def print(self):
@@ -51,11 +51,15 @@ class Agent:
         for self.num_episodes in range(self.total_episodes):
             obs = env.reset()
             done = False
+            action_mask = None
             score = 0
             self.beginEpisode(obs)
             while not done:
-                action = self.getAction(obs)
+                action = self.getAction(obs, mask=action_mask)
                 obs_, reward, done, info = env.step(action)
+                if 'mask' in info:
+                    action_mask = info['mask']
+
                 self.update(obs, action, reward, done, obs_, info)
                 score += reward
                 obs = obs_     
@@ -88,6 +92,7 @@ class Agent:
             print("|Episode Score {}\t|".format(score).expandtabs(45))
             print("|Avg score {}\t|".format(round(np.mean(self.test_scores[0:self.num_test_episodes+1]), 2)).expandtabs(45))
             print("|" + "=" * 44 + "|")
+
     @abstractclassmethod
     def save(self, filename):
         pass
