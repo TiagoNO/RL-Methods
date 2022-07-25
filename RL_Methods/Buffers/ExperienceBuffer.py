@@ -6,15 +6,16 @@ class ExperienceSamples:
     def __init__(self, states, actions, rewards, dones, next_states, device):
         self.states = th.tensor(np.array(states, copy=False), dtype=th.float).to(device)
         self.actions = th.tensor(np.array(actions, copy=False), dtype=th.int64).to(device)
-        self.rewards = th.tensor(np.array(rewards, copy=False), dtype=th.float).to(device)
+        self.rewards = th.tensor(np.array(rewards, copy=False), dtype=th.float32).to(device)
         self.dones = th.tensor(np.array(dones, copy=False), dtype=th.bool).to(device)
         self.next_states = th.tensor(np.array(next_states, copy=False), dtype=th.float).to(device)
+        self.size = len(rewards)
 
 class ExperienceBuffer:
     def __init__(self, max_sz, input_dim, device):
         self.max_sz = int(max_sz)
         self.obs = np.zeros((self.max_sz, input_dim[0]), dtype=np.float32)
-        self.actions = np.zeros(self.max_sz, dtype=np.float32)
+        self.actions = np.zeros(self.max_sz, dtype=np.int64)
         self.rewards = np.zeros(self.max_sz, dtype=np.float32)
         self.dones = np.zeros(self.max_sz, dtype=np.bool_)
         self.obs_ = np.zeros((self.max_sz, input_dim[0]), dtype=np.float32)
