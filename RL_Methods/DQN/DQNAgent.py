@@ -1,6 +1,8 @@
+from genericpath import isdir
 import numpy as np
 import torch as th
 import pickle
+import os
 
 from RL_Methods.Agent import Agent
 from RL_Methods.DQN.Model import Model
@@ -37,6 +39,9 @@ class DQNAgent (Agent):
         self.gamma = gamma
         self.batch_size = batch_size
         self.savedir = savedir
+        if not os.path.isdir(self.savedir):
+            os.makedirs(self.savedir)
+
         self.checkpoint_freq = checkpoint_freq
         self.log_freq = log_freq
 
@@ -86,6 +91,9 @@ class DQNAgent (Agent):
         return self.model.loss_func(states_action_values, expected_state_action_values).mean()
 
     def step(self):
+        if len(self.exp_buffer) < self.batch_size:
+            return
+
         self.model.train(True)
         loss = self.calculate_loss()
         self.model.optimizer.zero_grad()
@@ -116,7 +124,7 @@ class DQNAgent (Agent):
         self.updateEpsilon()
         self.step()
 
-        if self.checkpoint_freq % self.num_timesteps == 0:
+        if self.num_timesteps % self.checkpoint_freq  == 0:
             self.save(self.savedir + "dqn_{}_steps.pt".format(self.num_timesteps))
 
         if self.num_timesteps % self.target_network_sync_freq == 0:
