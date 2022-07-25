@@ -18,7 +18,7 @@ class DistributionalModel(nn.Module):
         self.max_v = max_v
         self.delta = (self.max_v - self.min_v) / (self.n_atoms - 1)
 
-        arch = {'net_arch':[24, 24], 'activation_fn':nn.ReLU}
+        arch = {'net_arch':[24, 24, 24], 'activation_fn':nn.ReLU}
         self.q_net = self.make_network(arch, input_dim, action_dim * n_atoms).to(device)
         self.target_net = self.make_network(arch, input_dim, action_dim * n_atoms).to(device)
 
@@ -26,7 +26,7 @@ class DistributionalModel(nn.Module):
         self.optimizer = optim.Adam(self.q_net.parameters(), lr=self.learning_rate)
 
         self.register_buffer("support_vector", th.arange(self.min_v, self.max_v + self.delta, self.delta))
-        self.softmax = nn.Softmax(dim=1)
+        self.softmax = nn.Softmax(dim=2)
 
     def make_network(self, achitecture, input_dim, output_dim):
         activation = achitecture['activation_fn']
@@ -45,20 +45,29 @@ class DistributionalModel(nn.Module):
         return torchinfo.summary(self.q_net, self.input_dim, device=self.device).__str__()
 
     def forward(self, state):
-        batch_sz = state.size()[0]
-        return self.q_net(state).view(batch_sz, -1, self.n_atoms)
+        batch_sz = state.shape[0]
+        return self.q_net(state).view(batch_sz, self.action_dim, self.n_atoms)
 
     def q_values(self, state):
         values = self(state)
-        print(values.shape)
-        print(self.support_vector.shape)
         probs = self.softmax(values)
-        q_values = (probs * self.support_vector).sum(dim=2)
+        q_values = th.mul(probs, self.support_vector).sum(dim=2)
         return q_values, values
 
     def q_target(self, state):
-        return self.target_net(state)
+        batch_sz = state.shape[0]
+        values = self.target_net(state).view(batch_sz, self.action_dim, self.n_atoms)
+        probs = self.softmax(values)
+        q_values = th.mul(probs, self.support_vector).sum(dim=2)
+        return q_values, values
 
     def sync(self):
         print("Sync target network...")
         self.target_net.load_state_dict(self.q_net.state_dict())
+
+    def save(self, file):
+        th.save(self.q_net.state_dict(), file)
+
+    def load(self, file):
+        self.q_net.load_state_dict(th.load(file, map_location=th.device(self.device)))
+        self.sync()
