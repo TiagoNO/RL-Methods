@@ -1,4 +1,3 @@
-from tabnanny import check
 from RL_Methods.DQN.DQNAgent import DQNAgent
 from RL_Methods.NoisyNetDQN.NoisyModel import NoisyModel
 import torch as th
