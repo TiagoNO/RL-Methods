@@ -7,7 +7,7 @@ from RL_Methods.Buffers.PrioritizedReplayBuffer import PrioritizedReplayBuffer
 import torch as th
 import numpy as np
 
-from RL_Methods.utils.Schedule import Schedule
+from RL_Methods.utils.Schedule import LinearSchedule, Schedule
 
 
 class RainbowAgent(DQNAgent):
@@ -32,6 +32,10 @@ class RainbowAgent(DQNAgent):
                        log_freq,
                        architecture,
                        device='cpu'):
+        self.initial_sigma = initial_sigma
+        self.n_atoms = n_atoms
+        self.min_value = min_value
+        self.max_value = max_value
 
         super().__init__(
                         input_dim=input_dim, 
@@ -48,7 +52,6 @@ class RainbowAgent(DQNAgent):
                         architecture=architecture, 
                         device=device
                         )
-        self.model = RainbowModel(input_dim, action_dim, learning_rate, initial_sigma, n_atoms, min_value, max_value, architecture, device)
         self.exp_buffer = PrioritizedReplayBuffer(experience_buffer_size, input_dim, device, experience_prob_alpha)
         self.beta = experience_beta
         self.trajectory_steps = trajectory_steps
@@ -56,8 +59,10 @@ class RainbowAgent(DQNAgent):
 
         # Using Noisy network, so we dont need e-greedy search
         # but, for cartpole, initial small epsilon helps convergence
-        self.epsilon = 0.1
-        self.final_epsilon = 0.0
+        self.epsilon = LinearSchedule(0.1, epsilon.delta, 0.0)
+
+    def create_model(self, learning_rate, architecture, device):
+        return RainbowModel(self.input_dim, self.action_dim, learning_rate, self.initial_sigma, self.n_atoms, self.min_value, self.max_value, architecture, device)
 
     def calculate_loss(self):
         samples = self.exp_buffer.sample(self.batch_size, self.beta.get())
@@ -75,8 +80,12 @@ class RainbowAgent(DQNAgent):
             # print(next_best_distrib)
             projection = self.project_operator(next_best_distrib.numpy(), samples.rewards.numpy(), samples.dones.numpy())
 
-        loss_v = (-state_log_prob * projection)
-        return loss_v.sum(dim=1).mean()
+        loss_v = (-state_log_prob * projection).sum(dim=1)
+
+        loss_v *= samples.weights
+        self.exp_buffer.update_priorities(samples.indices, loss_v.detach().cpu().numpy())
+        self.beta.update()
+        return loss_v.mean()
 
     def project_operator(self, distrib, rewards, dones):
         batch_size = len(rewards)
@@ -116,8 +125,9 @@ class RainbowAgent(DQNAgent):
         if len(self.trajectory) >= self.trajectory_steps:
             t_state, t_action, t_reward, t_done, t_next_state = self.getTrajectory()
             self.exp_buffer.add(t_state, t_action, t_reward, t_done, t_next_state)
-            self.updateEpsilon()
             self.step()
+            self.epsilon.update()
+            self.model.update_learning_rate()
             self.trajectory.pop(0)
 
         self.trajectory.append([state, action, reward, done, next_state])
@@ -125,13 +135,18 @@ class RainbowAgent(DQNAgent):
         if self.num_timesteps % self.target_network_sync_freq == 0:
             self.model.sync()
 
+    def print(self):
+        super().print()
+        print("| Beta: {}\t|".format(self.beta.get()).expandtabs(45))
+        print("|" + "=" * 44 + "|")
+
     @th.no_grad()
     def getAction(self, state, mask=None, deterministic=False):
         self.model.train(True)
         if mask is None:
             mask = np.ones(self.action_dim, dtype=np.bool)
 
-        if np.random.rand() < self.epsilon and not deterministic:
+        if np.random.rand() < self.epsilon.get() and not deterministic:
             prob = np.array(mask, dtype=np.float)
             prob /= np.sum(prob)
             random_action = np.random.choice(self.action_dim, 1, p=prob).item()
@@ -141,5 +156,6 @@ class RainbowAgent(DQNAgent):
                 mask = np.invert(mask)
                 state = th.tensor(state, dtype=th.float).to(self.model.device).unsqueeze(0)
                 q_values, _ = self.model.q_values(state)
-                # q_values[mask] = -th.inf
+                q_values = q_values.squeeze(0)
+                q_values[mask] = -th.inf
                 return q_values.argmax().item()

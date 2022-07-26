@@ -8,7 +8,8 @@ from RL_Methods.DQN.Model import Model
 
 class NoisyModel(Model):
 
-    def __init__(self, input_dim, action_dim, learning_rate, architecture, device) -> None:
+    def __init__(self, input_dim, action_dim, learning_rate, sigma_init, architecture, device) -> None:
+        self.sigma_init = sigma_init
         super().__init__(input_dim, action_dim, learning_rate, architecture, device)
 
     def make_network(self, achitecture, input_dim, output_dim) -> nn.Sequential:

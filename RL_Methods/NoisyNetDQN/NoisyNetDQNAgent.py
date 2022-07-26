@@ -22,6 +22,7 @@ class NoisyNetDQNAgent(DQNAgent):
                     device='cpu'
                 ):
                 
+        self.sigma_init = sigma_init
         super().__init__(
                         input_dim=input_dim, 
                         action_dim=action_dim, 
@@ -37,8 +38,9 @@ class NoisyNetDQNAgent(DQNAgent):
                         architecture=architecture, 
                         device=device
                         )
-        self.model = NoisyModel(input_dim, action_dim, learning_rate, sigma_init, architecture, device)
-        self.epsilon = epsilon
+
+    def create_model(self, learning_rate, architecture, device):
+        return NoisyModel(self.input_dim, self.action_dim, learning_rate, self.sigma_init, architecture, device)
 
     @th.no_grad()
     def getAction(self, state, mask=None, deterministic=False):

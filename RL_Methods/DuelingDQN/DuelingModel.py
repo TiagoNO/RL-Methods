@@ -34,8 +34,8 @@ class DuelingModel(nn.Module):
 
     def update_learning_rate(self):
         self.learning_rate.update()
-        for g in optim.param_groups:
-            g['lr'] = 0.001
+        for g in self.optimizer.param_groups:
+            g['lr'] = self.learning_rate.get()
 
     def make_feature_extractor(self, achitecture, device):
         activation = achitecture['activation_fn']

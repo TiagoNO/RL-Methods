@@ -17,6 +17,9 @@ class Schedule:
     def update(self, delta):
         pass
 
+    def reset(self):
+        self.cur_value = self.initial_value
+
     def get(self):
         return self.cur_value        
 

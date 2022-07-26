@@ -76,8 +76,9 @@ class MultiStepDQNAgent(DQNAgent):
         if len(self.trajectory) >= self.trajectory_steps:
             t_state, t_action, t_reward, t_done, t_next_state = self.getTrajectory()
             self.exp_buffer.add(t_state, t_action, t_reward, t_done, t_next_state)
-            self.epsilon.update()
             self.step()
+            self.epsilon.update()
+            self.model.update_learning_rate()
             self.trajectory.pop(0)
 
         self.trajectory.append([state, action, reward, done, next_state])

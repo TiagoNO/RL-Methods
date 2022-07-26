@@ -57,7 +57,7 @@ class PrioritizedDQN(DQNAgent):
 
     def print(self):
         super().print()
-        print("|     - Beta: {}\t|".format(self.beta.get()).expandtabs(45))
+        print("| Beta: {}\t|".format(self.beta.get()).expandtabs(45))
         print("|" + "=" * 44 + "|")
 
     def endEpisode(self):

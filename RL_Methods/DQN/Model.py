@@ -46,7 +46,7 @@ class Model(nn.Module):
     def update_learning_rate(self):
         self.learning_rate.update()
         for g in self.optimizer.param_groups:
-            g['lr'] = 0.001
+            g['lr'] = self.learning_rate.get()
 
     def __str__(self) -> str:
         return torchinfo.summary(self.q_net, self.input_dim, device=self.device).__str__()

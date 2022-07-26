@@ -24,7 +24,9 @@ class DistributionalDQNAgent(DQNAgent):
                     architecture,
                     device='cpu'
                 ):
-                
+        self.n_atoms = n_atoms
+        self.min_value = min_value
+        self.max_value = max_value
         super().__init__(
                         input_dim=input_dim, 
                         action_dim=action_dim, 
@@ -40,7 +42,9 @@ class DistributionalDQNAgent(DQNAgent):
                         architecture=architecture, 
                         device=device
                         )
-        self.model = DistributionalModel(input_dim, action_dim, learning_rate, n_atoms, min_value, max_value, architecture, device)
+
+    def create_model(self, learning_rate, architecture, device):
+        return DistributionalModel(self.input_dim, self.action_dim, learning_rate, self.n_atoms, self.min_value, self.max_value, architecture, device)
 
     def calculate_loss(self):
         samples = self.exp_buffer.sample(self.batch_size)
@@ -83,7 +87,7 @@ class DistributionalDQNAgent(DQNAgent):
         if mask is None:
             mask = np.ones(self.action_dim, dtype=np.bool)
 
-        if np.random.rand() < self.epsilon and not deterministic:
+        if np.random.rand() < self.epsilon.get() and not deterministic:
             prob = np.array(mask, dtype=np.float)
             prob /= np.sum(prob)
             random_action = np.random.choice(self.action_dim, 1, p=prob).item()
@@ -93,5 +97,6 @@ class DistributionalDQNAgent(DQNAgent):
                 mask = np.invert(mask)
                 state = th.tensor(state, dtype=th.float).to(self.model.device).unsqueeze(0)
                 q_values, _ = self.model.q_values(state)
-                # q_values[mask] = -th.inf
+                q_values = q_values.squeeze(0)
+                q_values[mask] = -th.inf
                 return q_values.argmax().item()

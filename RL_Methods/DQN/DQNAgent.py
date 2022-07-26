@@ -11,7 +11,7 @@ from RL_Methods.utils.Schedule import Schedule
 
 import gym
 
-class DQNAgent (Agent):
+class DQNAgent(Agent):
 
     def __init__(self, 
                     input_dim, 
@@ -28,7 +28,6 @@ class DQNAgent (Agent):
                     architecture=None,
                     device='cpu'
                 ):
-        self.model = Model(input_dim, action_dim, learning_rate, architecture, device)
         
         self.input_dim = input_dim
         self.action_dim = action_dim
@@ -42,15 +41,18 @@ class DQNAgent (Agent):
         self.checkpoint_freq = checkpoint_freq
         self.log_freq = log_freq
 
-        self.exp_buffer = ExperienceBuffer(experience_buffer_size, self.input_dim, device)
         self.num_timesteps = 0
         self.losses = []
         self.target_network_sync_freq = target_network_sync_freq
 
+        self.model = self.create_model(learning_rate, architecture, device)
+        self.exp_buffer = ExperienceBuffer(experience_buffer_size, self.input_dim, device)
 
-    @th.no_grad()
+
+    def create_model(self, learning_rate, architecture, device):
+        return Model(self.input_dim, self.action_dim, learning_rate, architecture, device)
+
     def getAction(self, state, mask=None, deterministic=False):
-        self.model.train(True)
         if mask is None:
             mask = np.ones(self.action_dim, dtype=np.bool)
 
@@ -101,7 +103,7 @@ class DQNAgent (Agent):
         # total_norm = total_norm ** (1. / 2)
         # print(total_norm)
 
-        th.nn.utils.clip_grad_norm_(self.model.parameters(), 1)
+        th.nn.utils.clip_grad_norm_(self.model.parameters(), 20)
         self.model.optimizer.step()
 
     def endEpisode(self):
@@ -115,9 +117,9 @@ class DQNAgent (Agent):
 
     def update(self, state, action, reward, done, next_state, info):
         self.exp_buffer.add(state, action, reward, done, next_state)
+        self.step()
         self.epsilon.update()
         self.model.update_learning_rate()
-        self.step()
 
         if self.num_timesteps % self.checkpoint_freq  == 0:
             self.save(self.savedir + "dqn_{}_steps.pt".format(self.num_timesteps))
@@ -127,10 +129,11 @@ class DQNAgent (Agent):
 
     def print(self):
         super().print()
-        print("|     - Learning rate: {}\t|".format(self.model.learning_rate.get()).expandtabs(45))
-        print("|     - Epsilon: {}\t|".format(self.epsilon.get()).expandtabs(45))
-        print("|     - Steps until sync: {}\t|".format(self.target_network_sync_freq - (self.num_timesteps % self.target_network_sync_freq)).expandtabs(45))
-        print("|     - Avg loss: {}\t|".format(np.mean(self.losses[-30:])).expandtabs(45))
+        print("| {}\t|".format(self.__class__.__name__).expandtabs(45))
+        print("| Learning rate: {}\t|".format(self.model.learning_rate.get()).expandtabs(45))
+        print("| Epsilon: {}\t|".format(self.epsilon.get()).expandtabs(45))
+        print("| Steps until sync: {}\t|".format(self.target_network_sync_freq - (self.num_timesteps % self.target_network_sync_freq)).expandtabs(45))
+        print("| Avg loss: {}\t|".format(np.mean(self.losses[-30:])).expandtabs(45))
         print("|" + "=" * 44 + "|")
     
 
@@ -138,16 +141,15 @@ class DQNAgent (Agent):
         log_file = open(self.savedir + "log.txt", "a")
         log_file.write("{};".format(self.num_episodes))
         log_file.write("{};".format(self.num_timesteps))
-        log_file.write("{};".format(np.mean(self.scores[max(0, self.num_episodes-100):self.num_episodes+1])))
+        log_file.write("{};".format(np.mean(self.scores[-100:])))
         log_file.write("{};".format(self.model.learning_rate.get()))
-        log_file.write("{};".format(self.epsilon))
+        log_file.write("{};".format(self.epsilon.get()))
         log_file.write("{};".format(np.mean(self.losses[-30:])))
         log_file.write("\n")
 
 
     def save(self, file):
         self.model.save(file)
-        # pickle.dump(self.exp_buffer, open(self.savedir + "experience_buffer.txt", 'wb'))
 
     def load(self, file):
         print("Loading from: {}".format(file))
