@@ -23,13 +23,14 @@ class DistributionalDQNAgent(DQNAgent):
                     checkpoint_freq,
                     savedir,
                     log_freq,
+                    architecture,
                     device='cpu'
                 ):
                 
         super().__init__(input_dim, action_dim, initial_epsilon, final_epsilon, 
                         epsilon_decay, learning_rate, gamma, batch_size, experience_buffer_size, 
-                        target_network_sync_freq, checkpoint_freq, savedir, log_freq, device)
-        self.model = DistributionalModel(input_dim, action_dim, learning_rate, n_atoms, min_value, max_value, device)
+                        target_network_sync_freq, checkpoint_freq, savedir, log_freq, architecture, device)
+        self.model = DistributionalModel(input_dim, action_dim, learning_rate, n_atoms, min_value, max_value, architecture, device)
 
     def calculate_loss(self):
         samples = self.exp_buffer.sample(self.batch_size)

@@ -20,13 +20,14 @@ class NoisyNetDQNAgent(DQNAgent):
                     checkpoint_freq,
                     savedir,
                     log_freq,
+                    architecture,
                     device='cpu'
                 ):
                 
         super().__init__(input_dim, action_dim, initial_epsilon, final_epsilon, 
                         epsilon_decay, learning_rate, gamma, batch_size, experience_buffer_size, 
-                        target_network_sync_freq, checkpoint_freq, savedir, log_freq, device)
-        self.model = NoisyModel(input_dim, action_dim, learning_rate, sigma_init, device)
+                        target_network_sync_freq, checkpoint_freq, savedir, log_freq, architecture, device)
+        self.model = NoisyModel(input_dim, action_dim, learning_rate, sigma_init, architecture, device)
         self.epsilon = 0
         self.final_epsilon = 0
         # print(self.model)

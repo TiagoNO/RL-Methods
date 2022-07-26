@@ -24,11 +24,10 @@ class DQNAgent (Agent):
                     checkpoint_freq=50000,
                     savedir="",
                     log_freq=1,
+                    architecture=None,
                     device='cpu'
                 ):
-
-        self.model = Model(input_dim, action_dim, learning_rate, device)
-        print(self.model)
+        self.model = Model(input_dim, action_dim, learning_rate, architecture, device)
         
         self.input_dim = input_dim
         self.action_dim = action_dim
@@ -49,7 +48,7 @@ class DQNAgent (Agent):
         self.num_timesteps = 0
         self.losses = []
         self.target_network_sync_freq = target_network_sync_freq
-        # self.load(savedir + "dqn_current.pt")
+
 
     @th.no_grad()
     def getAction(self, state, mask=None, deterministic=False):

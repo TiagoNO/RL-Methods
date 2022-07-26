@@ -6,14 +6,14 @@ import torch as th
 
 class RainbowModel(DuelingModel):
 
-    def __init__(self, input_dim, action_dim, learning_rate, initial_sigma, n_atoms, min_v, max_v, device) -> None:
+    def __init__(self, input_dim, action_dim, learning_rate, initial_sigma, n_atoms, min_v, max_v, architecture, device) -> None:
         self.initial_sigma = initial_sigma
         self.n_atoms = n_atoms
         self.min_v = min_v
         self.max_v = max_v
         self.delta = (self.max_v - self.min_v) / (self.n_atoms - 1)
 
-        super().__init__(input_dim, action_dim, learning_rate, device)
+        super().__init__(input_dim, action_dim, learning_rate, architecture, device)
         self.register_buffer("support_vector", th.arange(self.min_v, self.max_v + self.delta, self.delta))
         self.softmax = nn.Softmax(dim=2)
     

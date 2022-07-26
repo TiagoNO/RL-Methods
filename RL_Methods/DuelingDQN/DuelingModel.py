@@ -8,15 +8,18 @@ import itertools
 import torchinfo
 class DuelingModel(nn.Module):
 
-    def __init__(self, input_dim, action_dim, learning_rate, device) -> None:
+    def __init__(self, input_dim, action_dim, learning_rate, architecture, device) -> None:
         super(DuelingModel, self).__init__()
         self.action_dim = action_dim
         self.learning_rate = learning_rate
         self.device = device
         self.input_dim = input_dim
 
-        arch = {'feature_arch':[128, 128], 'value_arch':[128, 64], 'advantage_arch':[128, 64], 'activation_fn':nn.ReLU}
-        
+        if architecture is None:
+            arch = self.set_default_architecture()
+        else:
+            arch = architecture
+
         self.features_extractor = self.make_feature_extractor(arch, device)
         self.value_net, self.advantage_net = self.make_network(arch, device)
 
@@ -25,7 +28,10 @@ class DuelingModel(nn.Module):
 
         self.loss_func = nn.MSELoss(reduction='none')
         self.optimizer = optim.Adam(itertools.chain(self.features_extractor.parameters(), self.advantage_net.parameters(), self.value_net.parameters()), lr=self.learning_rate)
-        # print(self.parameters())
+
+    def set_default_architecture(self):
+        self.architecture = {'feature_arch':[128, 128], 'value_arch':[128, 64], 'advantage_arch':[128, 64], 'activation_fn':nn.ReLU}
+
 
     def make_feature_extractor(self, achitecture, device):
         activation = achitecture['activation_fn']
