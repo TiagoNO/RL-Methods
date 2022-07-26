@@ -38,12 +38,15 @@ class MultiStepDQNAgent(DQNAgent):
         self.trajectory = []
 
     def beginEpisode(self, state):
-        for i in range(len(self.trajectory)):
+        for _ in range(len(self.trajectory)):
             state, action, reward, done, next_state = self.getTrajectory()
             self.exp_buffer.add(state, action, reward, done, next_state)
             self.trajectory.pop(0)
 
     def getTrajectory(self):
+        if len(self.trajectory) == 1:
+            return self.trajectory[0]
+
         state = self.trajectory[0][0]
         action = self.trajectory[0][1]
         reward = 0
@@ -82,6 +85,9 @@ class MultiStepDQNAgent(DQNAgent):
             self.trajectory.pop(0)
 
         self.trajectory.append([state, action, reward, done, next_state])
+
+        if self.num_timesteps % self.checkpoint_freq  == 0:
+            self.save(self.savedir + "dqn_{}_steps.pt".format(self.num_timesteps))
 
         if self.num_timesteps % self.target_network_sync_freq == 0:
             self.model.sync()
