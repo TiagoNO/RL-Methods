@@ -1,6 +1,0 @@
-README.md
-setup.py
-RL_Methods.egg-info/PKG-INFO
-RL_Methods.egg-info/SOURCES.txt
-RL_Methods.egg-info/dependency_links.txt
-RL_Methods.egg-info/top_level.txt
