@@ -1,7 +1,4 @@
-from platform import architecture
-from cv2 import log
 import gym
-from RL_Methods.QLearning.QLearningAgent import QLearningAgent, DoubleQLearningAgent
 from RL_Methods.DQN.DQNAgent import DQNAgent
 from RL_Methods.DDQN.DoubleDQNAgent import DoubleDQNAgent
 from RL_Methods.PrioritizedDQN.PrioritizedDQN import PrioritizedDQN
