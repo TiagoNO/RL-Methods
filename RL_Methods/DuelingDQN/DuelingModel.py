@@ -30,8 +30,7 @@ class DuelingModel(nn.Module):
         self.optimizer = optim.Adam(itertools.chain(self.features_extractor.parameters(), self.advantage_net.parameters(), self.value_net.parameters()), lr=self.learning_rate)
 
     def set_default_architecture(self):
-        self.architecture = {'feature_arch':[128, 128], 'value_arch':[128, 64], 'advantage_arch':[128, 64], 'activation_fn':nn.ReLU}
-
+        return {'feature_arch':[128, 128], 'value_arch':[128, 64], 'advantage_arch':[128, 64], 'activation_fn':nn.ReLU}
 
     def make_feature_extractor(self, achitecture, device):
         activation = achitecture['activation_fn']

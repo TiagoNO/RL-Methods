@@ -27,7 +27,7 @@ class Model(nn.Module):
         self.optimizer = optim.Adam(self.q_net.parameters(), lr=self.learning_rate)
 
     def set_default_architecture(self):
-        self.architecture = {'net_arch':[24, 24], 'activation_fn':th.nn.ReLU}
+        return {'net_arch':[24, 24], 'activation_fn':th.nn.ReLU}
 
     def make_network(self, achitecture, input_dim, output_dim):
         activation = achitecture['activation_fn']
