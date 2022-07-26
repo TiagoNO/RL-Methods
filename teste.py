@@ -131,6 +131,9 @@ if __name__ == '__main__':
     #                     experience_buffer_size=1e6,
     #                     target_network_sync_freq=2000,
     #                     trajectory_steps=4,
+    #                     checkpoint_freq=50000,
+    #                     savedir="experiments/multistep/",
+    #                     log_freq=1,
     #                     device='cpu'
     #                     )
     # multistepDQNAgent.train(env, n_episodes)
@@ -154,52 +157,55 @@ if __name__ == '__main__':
     # noisyDQNAgent.train(env, n_episodes)
     # generate_graph("prioritized_dqn", noisyDQNAgent.scores, plot_every)
 
-    env = gym.make(env_name)
-    distributionalDQNAgent = DistributionalDQNAgent(
-                        env.observation_space.shape,
-                        env.action_space.n,
-                        initial_epsilon=1.0,
-                        final_epsilon=0.05,
-                        epsilon_decay=1e-5,
-                        learning_rate=0.001,
-                        gamma=.9,
-                        batch_size=64,
-                        experience_buffer_size=1e6,
-                        target_network_sync_freq=2000,
-                        n_atoms=51,
-                        min_value=1,
-                        max_value=200,
-                        checkpoint_freq=50000,
-                        savedir="experiments/distributional/",
-                        log_freq=1,
-                        device='cpu'
-                        )
-    distributionalDQNAgent.train(env, n_episodes)
-    generate_graph("distributional_dqn", distributionalDQNAgent.scores, plot_every)
-
     # env = gym.make(env_name)
-    # rainbowAgent = RainbowAgent(
+    # distributionalDQNAgent = DistributionalDQNAgent(
     #                     env.observation_space.shape,
     #                     env.action_space.n,
     #                     initial_epsilon=1.0,
     #                     final_epsilon=0.05,
     #                     epsilon_decay=1e-5,
-    #                     learning_rate=.01,
+    #                     learning_rate=0.001,
     #                     gamma=.9,
-    #                     batch_size=32,
+    #                     batch_size=64,
     #                     experience_buffer_size=1e6,
     #                     target_network_sync_freq=2000,
-    #                     experience_prob_alpha=0.6,
-    #                     experience_beta=0.4,
-    #                     experience_beta_decay=1e-6,
-    #                     trajectory_steps=4,
-    #                     initial_sigma=.9,
-    #                     checkpoint_freq=10000,
-    #                     savedir="experiments/rainbow/",
+    #                     n_atoms=51,
+    #                     min_value=1,
+    #                     max_value=200,
+    #                     checkpoint_freq=50000,
+    #                     savedir="experiments/distributional/",
     #                     log_freq=1,
     #                     device='cpu'
     #                     )
-    # rainbowAgent.train(env, n_episodes)
-    # generate_graph("prioritized_dqn", rainbowAgent.scores, plot_every)
+    # distributionalDQNAgent.train(env, n_episodes)
+    # generate_graph("distributional_dqn", distributionalDQNAgent.scores, plot_every)
+
+    env = gym.make(env_name)
+    rainbowAgent = RainbowAgent(
+                        env.observation_space.shape,
+                        env.action_space.n,
+                        initial_epsilon=1.0,
+                        final_epsilon=0.05,
+                        epsilon_decay=1e-5,
+                        learning_rate=.0001,
+                        gamma=.9,
+                        batch_size=32,
+                        experience_buffer_size=1e6,
+                        target_network_sync_freq=2000,
+                        experience_prob_alpha=0.6,
+                        experience_beta=0.4,
+                        experience_beta_decay=1e-6,
+                        trajectory_steps=4,
+                        initial_sigma=.9,
+                        n_atoms=2,
+                        min_value=1,
+                        max_value=200,
+                        checkpoint_freq=10000,
+                        savedir="experiments/rainbow/",
+                        log_freq=1,
+                        device='cpu'
+                        )
+    rainbowAgent.train(env, n_episodes)
+    generate_graph(rainbowAgent.savedir+"rainbow_dqn", rainbowAgent.scores, plot_every)
 
     
