@@ -1,5 +1,6 @@
 from RL_Methods.DQN.DQNAgent import DQNAgent
 from RL_Methods.NoisyNetDQN.NoisyModel import NoisyModel
+from RL_Methods.utils.Schedule import LinearSchedule
 import torch as th
 import numpy as np
 
@@ -39,18 +40,9 @@ class NoisyNetDQNAgent(DQNAgent):
                         device=device
                         )
 
+        # Using Noisy network, so we dont need e-greedy search
+        # but, for cartpole, initial small epsilon helps convergence
+        self.epsilon = LinearSchedule(0.1, epsilon.delta, 0.0)
+
     def create_model(self, learning_rate, architecture, device):
         return NoisyModel(self.input_dim, self.action_dim, learning_rate, self.sigma_init, architecture, device)
-
-    @th.no_grad()
-    def getAction(self, state, mask=None, deterministic=False):
-        self.model.train(True)
-        if mask is None:
-            mask = np.ones(self.action_dim, dtype=np.bool)
-
-        with th.no_grad():
-            mask = np.invert(mask)
-            state = th.tensor(state, dtype=th.float).to(self.model.device)
-            q_values = self.model.q_values(state)
-            q_values[mask] = -th.inf
-            return q_values.argmax().item()
