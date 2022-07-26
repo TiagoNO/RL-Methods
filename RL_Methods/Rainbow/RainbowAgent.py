@@ -1,3 +1,4 @@
+from matplotlib import projections
 from RL_Methods.DQN.DQNAgent import DQNAgent
 from RL_Methods.Rainbow.RainbowModel import RainbowModel
 from RL_Methods.DuelingDQN.DuelingModel import DuelingModel
@@ -24,6 +25,9 @@ class RainbowAgent(DQNAgent):
                        experience_beta_decay,
                        trajectory_steps,
                        initial_sigma,
+                       n_atoms,
+                       min_value,
+                       max_value,
                        checkpoint_freq,
                        savedir,
                        log_freq,
@@ -32,7 +36,7 @@ class RainbowAgent(DQNAgent):
         super().__init__(input_dim, action_dim, initial_epsilon, final_epsilon, 
                         epsilon_decay, learning_rate, gamma, batch_size, experience_buffer_size, 
                         target_network_sync_freq, checkpoint_freq, savedir, log_freq, device)
-        self.model = RainbowModel(input_dim, action_dim, learning_rate, initial_sigma, device)
+        self.model = RainbowModel(input_dim, action_dim, learning_rate, initial_sigma, n_atoms, min_value, max_value, device)
         self.exp_buffer = PrioritizedReplayBuffer(experience_buffer_size, input_dim, device, experience_prob_alpha)
         self.beta = experience_beta
         self.beta_decay = experience_beta_decay
@@ -47,13 +51,37 @@ class RainbowAgent(DQNAgent):
     def calculate_loss(self):
         samples = self.exp_buffer.sample(self.batch_size)
 
-        states_action_values = self.model.q_values(samples.states).gather(1, samples.actions.unsqueeze(-1)).squeeze(-1)
-        with th.no_grad():
-            next_actions = self.model.q_values(samples.next_states).argmax(dim=1)
-            next_states_values = self.model.q_target(samples.next_states).gather(1, next_actions.unsqueeze(-1)).squeeze(-1)
-            expected_state_action_values = samples.rewards + ((~samples.dones) * self.gamma * next_states_values)
+        _, q_values_atoms = self.model.q_values(samples.states)
+        state_action_values = q_values_atoms[range(samples.size), samples.actions]
+        state_log_prob = th.log_softmax(state_action_values, dim=1)
 
-        return self.model.loss_func(states_action_values, expected_state_action_values).mean()
+        with th.no_grad():
+            q_values, _ = self.model.q_values(samples.next_states)
+            next_actions = th.argmax(q_values, dim=1)
+            _, next_q_atoms = self.model.q_target(samples.next_states)
+            next_distrib = th.softmax(next_q_atoms, dim=2)
+            next_best_distrib = next_distrib[range(samples.size), next_actions]
+            # print(next_best_distrib)
+            projection = self.project_operator(next_best_distrib.numpy(), samples.rewards.numpy(), samples.dones.numpy())
+
+        loss_v = (-state_log_prob * projection)
+        return loss_v.sum(dim=1).mean()
+
+    def project_operator(self, distrib, rewards, dones):
+        batch_size = len(rewards)
+        projection = np.zeros((batch_size, self.model.n_atoms), dtype=np.float32)
+        for j in range(self.model.n_atoms):
+            atom = self.model.min_v + (j * self.model.delta)
+            tz_j = np.clip(rewards + ((1 - dones) * (self.gamma**self.trajectory_steps) * atom), self.model.min_v, self.model.max_v)
+            b_j = (tz_j - self.model.min_v) / self.model.delta
+            l = np.floor(b_j).astype(np.int64)
+            u = np.ceil(b_j).astype(np.int64)
+            eq_mask = u == l
+            projection[eq_mask, l[eq_mask]] += distrib[eq_mask, j]
+            ne_mask = u != l
+            projection[ne_mask, l[ne_mask]] += distrib[ne_mask, j] * (u - b_j)[ne_mask]
+            projection[ne_mask, u[ne_mask]] += distrib[ne_mask, j] * (b_j - l)[ne_mask]
+        return th.tensor(projection, dtype=th.float32)
 
     def beginEpisode(self, state):
         for i in range(len(self.trajectory)):
@@ -86,15 +114,21 @@ class RainbowAgent(DQNAgent):
         if self.num_timesteps % self.target_network_sync_freq == 0:
             self.model.sync()
 
-    # @th.no_grad()
-    # def getAction(self, state, mask=None, deterministic=False):
-    #     self.model.train(True)
-    #     if mask is None:
-    #         mask = np.ones(self.action_dim, dtype=np.bool)
+    @th.no_grad()
+    def getAction(self, state, mask=None, deterministic=False):
+        self.model.train(True)
+        if mask is None:
+            mask = np.ones(self.action_dim, dtype=np.bool)
 
-    #     with th.no_grad():
-    #         mask = np.invert(mask)
-    #         state = th.tensor(state, dtype=th.float).to(self.model.device)
-    #         q_values = self.model.q_values(state)
-    #         q_values[mask] = -th.inf
-    #         return q_values.argmax().item()
+        if np.random.rand() < self.epsilon and not deterministic:
+            prob = np.array(mask, dtype=np.float)
+            prob /= np.sum(prob)
+            random_action = np.random.choice(self.action_dim, 1, p=prob).item()
+            return random_action
+        else:
+            with th.no_grad():
+                mask = np.invert(mask)
+                state = th.tensor(state, dtype=th.float).to(self.model.device).unsqueeze(0)
+                q_values, _ = self.model.q_values(state)
+                # q_values[mask] = -th.inf
+                return q_values.argmax().item()
