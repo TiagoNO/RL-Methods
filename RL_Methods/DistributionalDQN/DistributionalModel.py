@@ -18,7 +18,7 @@ class DistributionalModel(nn.Module):
         self.max_v = max_v
         self.delta = (self.max_v - self.min_v) / (self.n_atoms - 1)
 
-        arch = {'net_arch':[24, 24, 24], 'activation_fn':nn.ReLU}
+        arch = {'net_arch':[24, 24], 'activation_fn':nn.ReLU}
         self.q_net = self.make_network(arch, input_dim, action_dim * n_atoms).to(device)
         self.target_net = self.make_network(arch, input_dim, action_dim * n_atoms).to(device)
 
