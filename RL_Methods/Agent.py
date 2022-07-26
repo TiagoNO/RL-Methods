@@ -35,20 +35,20 @@ class Agent:
     def print(self):
         print("|" + "=" * 44 + "|")
         print("|Agent\t|".expandtabs(45))
-        print("|Episode {}/{}\t|".format(self.num_episodes+1, self.total_episodes).expandtabs(45))
-        print("|Time steps {}\t|".format(self.num_timesteps).expandtabs(45))
+        print("|Episode {}\t|".format(self.num_episodes+1).expandtabs(45))
+        print("|Time steps {}/{}\t|".format(self.num_timesteps, self.total_timesteps).expandtabs(45))
         print("|Episode Score {}\t|".format(self.scores[self.num_episodes]).expandtabs(45))
         print("|Avg score {}\t|".format(round(np.mean(self.scores[max(0, self.num_episodes-100):self.num_episodes+1]), 2)).expandtabs(45))
         print("|" + "=" * 44 + "|")
 
-    def train(self, env, n_episodes):
-        self.total_episodes = int(n_episodes)
-        self.scores = np.zeros(self.total_episodes, dtype=np.float32)
+    def train(self, env, total_timesteps):
+        self.total_timesteps = int(total_timesteps)
+        self.scores = []
         self.num_timesteps = 0
         self.num_episodes = 0
 
         self.beginTrainning()
-        for self.num_episodes in range(self.total_episodes):
+        while self.num_timesteps < total_timesteps:
             obs = env.reset()
             done = False
             action_mask = None
@@ -64,10 +64,11 @@ class Agent:
                 score += reward
                 obs = obs_     
                 self.num_timesteps += 1
-            self.scores[self.num_episodes] = score
+            self.scores.append(score)
             print("\n\n")
             self.print()
             self.endEpisode()
+            self.num_episodes+=1
         self.endTrainning()
 
     def test(self, env, n_episodes):

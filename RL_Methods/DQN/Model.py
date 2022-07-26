@@ -1,19 +1,19 @@
 import torch as th
 import torch.nn as nn
 import torch.optim as optim
-import torch.nn.functional as F
 import torchinfo
+
+from RL_Methods.utils.Schedule import Schedule
 
 
 class Model(nn.Module):
 
-    def __init__(self, input_dim, action_dim, learning_rate, architecture, device) -> None:
+    def __init__(self, input_dim, action_dim, learning_rate : Schedule, architecture, device) -> None:
         super(Model, self).__init__()
         self.action_dim = action_dim
         self.learning_rate = learning_rate
         self.device = device
         self.input_dim = input_dim
-
 
         if architecture is None:
             arch = self.set_default_architecture()
@@ -24,7 +24,8 @@ class Model(nn.Module):
         self.target_net = self.make_network(arch, input_dim, action_dim).to(device)
 
         self.loss_func = nn.MSELoss(reduction='none')
-        self.optimizer = optim.Adam(self.q_net.parameters(), lr=self.learning_rate)
+        
+        self.optimizer = optim.Adam(self.q_net.parameters(), lr=self.learning_rate.get())
 
     def set_default_architecture(self):
         return {'net_arch':[24, 24], 'activation_fn':th.nn.ReLU}
@@ -41,6 +42,11 @@ class Model(nn.Module):
             last_dim = net_arch[i]
         net.add_module("ouput", nn.Linear(last_dim, output_dim, bias=True))
         return net
+
+    def update_learning_rate(self):
+        self.learning_rate.update()
+        for g in self.optimizer.param_groups:
+            g['lr'] = 0.001
 
     def __str__(self) -> str:
         return torchinfo.summary(self.q_net, self.input_dim, device=self.device).__str__()

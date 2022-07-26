@@ -7,22 +7,21 @@ from RL_Methods.Buffers.PrioritizedReplayBuffer import PrioritizedReplayBuffer
 import torch as th
 import numpy as np
 
+from RL_Methods.utils.Schedule import Schedule
+
 
 class RainbowAgent(DQNAgent):
 
     def __init__(self, input_dim, 
                        action_dim, 
-                       initial_epsilon, 
-                       final_epsilon, 
-                       epsilon_decay, 
-                       learning_rate, 
+                       learning_rate : Schedule,
+                       epsilon : Schedule,
                        gamma, 
                        batch_size, 
                        experience_buffer_size, 
                        target_network_sync_freq,
                        experience_prob_alpha, 
-                       experience_beta, 
-                       experience_beta_decay,
+                       experience_beta : Schedule, 
                        trajectory_steps,
                        initial_sigma,
                        n_atoms,
@@ -34,13 +33,24 @@ class RainbowAgent(DQNAgent):
                        architecture,
                        device='cpu'):
 
-        super().__init__(input_dim, action_dim, initial_epsilon, final_epsilon, 
-                        epsilon_decay, learning_rate, gamma, batch_size, experience_buffer_size, 
-                        target_network_sync_freq, checkpoint_freq, savedir, log_freq, architecture, device)
+        super().__init__(
+                        input_dim=input_dim, 
+                        action_dim=action_dim, 
+                        learning_rate=learning_rate,
+                        epsilon=epsilon,
+                        gamma=gamma, 
+                        batch_size=batch_size, 
+                        experience_buffer_size=experience_buffer_size, 
+                        target_network_sync_freq=target_network_sync_freq, 
+                        checkpoint_freq=checkpoint_freq, 
+                        savedir=savedir, 
+                        log_freq=log_freq, 
+                        architecture=architecture, 
+                        device=device
+                        )
         self.model = RainbowModel(input_dim, action_dim, learning_rate, initial_sigma, n_atoms, min_value, max_value, architecture, device)
         self.exp_buffer = PrioritizedReplayBuffer(experience_buffer_size, input_dim, device, experience_prob_alpha)
         self.beta = experience_beta
-        self.beta_decay = experience_beta_decay
         self.trajectory_steps = trajectory_steps
         self.trajectory = []
 
@@ -50,7 +60,7 @@ class RainbowAgent(DQNAgent):
         self.final_epsilon = 0.0
 
     def calculate_loss(self):
-        samples = self.exp_buffer.sample(self.batch_size)
+        samples = self.exp_buffer.sample(self.batch_size, self.beta.get())
 
         _, q_values_atoms = self.model.q_values(samples.states)
         state_action_values = q_values_atoms[range(samples.size), samples.actions]

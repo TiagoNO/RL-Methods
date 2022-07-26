@@ -1,14 +1,14 @@
-from distutils import archive_util
 import torch as th
 import torch.nn as nn
 import torch.optim as optim
-import torch.nn.functional as F
 
 import itertools
 import torchinfo
+
+from RL_Methods.utils.Schedule import Schedule
 class DuelingModel(nn.Module):
 
-    def __init__(self, input_dim, action_dim, learning_rate, architecture, device) -> None:
+    def __init__(self, input_dim, action_dim, learning_rate : Schedule, architecture, device) -> None:
         super(DuelingModel, self).__init__()
         self.action_dim = action_dim
         self.learning_rate = learning_rate
@@ -27,10 +27,15 @@ class DuelingModel(nn.Module):
         self.target_value_net, self.target_advantage_net = self.make_network(arch, device)
 
         self.loss_func = nn.MSELoss(reduction='none')
-        self.optimizer = optim.Adam(itertools.chain(self.features_extractor.parameters(), self.advantage_net.parameters(), self.value_net.parameters()), lr=self.learning_rate)
+        self.optimizer = optim.Adam(itertools.chain(self.features_extractor.parameters(), self.advantage_net.parameters(), self.value_net.parameters()), lr=self.learning_rate.get())
 
     def set_default_architecture(self):
         return {'feature_arch':[128, 128], 'value_arch':[128, 64], 'advantage_arch':[128, 64], 'activation_fn':nn.ReLU}
+
+    def update_learning_rate(self):
+        self.learning_rate.update()
+        for g in optim.param_groups:
+            g['lr'] = 0.001
 
     def make_feature_extractor(self, achitecture, device):
         activation = achitecture['activation_fn']

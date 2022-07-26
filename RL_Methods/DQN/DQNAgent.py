@@ -7,16 +7,17 @@ import os
 from RL_Methods.Agent import Agent
 from RL_Methods.DQN.Model import Model
 from RL_Methods.Buffers.ExperienceBuffer import ExperienceBuffer
+from RL_Methods.utils.Schedule import Schedule
+
+import gym
 
 class DQNAgent (Agent):
 
     def __init__(self, 
                     input_dim, 
                     action_dim, 
-                    initial_epsilon, 
-                    final_epsilon, 
-                    epsilon_decay,
-                    learning_rate, 
+                    learning_rate: Schedule,
+                    epsilon : Schedule,
                     gamma, 
                     batch_size, 
                     experience_buffer_size,
@@ -31,10 +32,7 @@ class DQNAgent (Agent):
         
         self.input_dim = input_dim
         self.action_dim = action_dim
-        self.epsilon = initial_epsilon
-        self.final_epsilon = final_epsilon
-        self.epsilon_decay = epsilon_decay
-        self.learning_rate = learning_rate
+        self.epsilon = epsilon
         self.gamma = gamma
         self.batch_size = batch_size
         self.savedir = savedir
@@ -56,7 +54,7 @@ class DQNAgent (Agent):
         if mask is None:
             mask = np.ones(self.action_dim, dtype=np.bool)
 
-        if np.random.rand() < self.epsilon and not deterministic:
+        if np.random.rand() < self.epsilon.get() and not deterministic:
             prob = np.array(mask, dtype=np.float)
             prob /= np.sum(prob)
             random_action = np.random.choice(self.action_dim, 1, p=prob).item()
@@ -68,9 +66,6 @@ class DQNAgent (Agent):
                 q_values = self.model.q_values(state)
                 q_values[mask] = -th.inf
                 return q_values.argmax().item()
-
-    def updateEpsilon(self):
-        self.epsilon = max(self.final_epsilon, self.epsilon - self.epsilon_decay)
 
     def calculate_loss(self):
         samples = self.exp_buffer.sample(self.batch_size)
@@ -120,7 +115,8 @@ class DQNAgent (Agent):
 
     def update(self, state, action, reward, done, next_state, info):
         self.exp_buffer.add(state, action, reward, done, next_state)
-        self.updateEpsilon()
+        self.epsilon.update()
+        self.model.update_learning_rate()
         self.step()
 
         if self.num_timesteps % self.checkpoint_freq  == 0:
@@ -131,8 +127,8 @@ class DQNAgent (Agent):
 
     def print(self):
         super().print()
-        print("|     - Learning rate: {}\t|".format(self.learning_rate).expandtabs(45))
-        print("|     - Epsilon: {}\t|".format(self.epsilon).expandtabs(45))
+        print("|     - Learning rate: {}\t|".format(self.model.learning_rate.get()).expandtabs(45))
+        print("|     - Epsilon: {}\t|".format(self.epsilon.get()).expandtabs(45))
         print("|     - Steps until sync: {}\t|".format(self.target_network_sync_freq - (self.num_timesteps % self.target_network_sync_freq)).expandtabs(45))
         print("|     - Avg loss: {}\t|".format(np.mean(self.losses[-30:])).expandtabs(45))
         print("|" + "=" * 44 + "|")
@@ -143,10 +139,8 @@ class DQNAgent (Agent):
         log_file.write("{};".format(self.num_episodes))
         log_file.write("{};".format(self.num_timesteps))
         log_file.write("{};".format(np.mean(self.scores[max(0, self.num_episodes-100):self.num_episodes+1])))
-        log_file.write("{};".format(self.learning_rate))
+        log_file.write("{};".format(self.model.learning_rate.get()))
         log_file.write("{};".format(self.epsilon))
-        log_file.write("{};".format(self.final_epsilon))
-        log_file.write("{};".format(self.epsilon_decay))
         log_file.write("{};".format(np.mean(self.losses[-30:])))
         log_file.write("\n")
 

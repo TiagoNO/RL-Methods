@@ -7,10 +7,8 @@ class DoubleDQNAgent(DQNAgent):
     def __init__(self, 
                     input_dim, 
                     action_dim, 
-                    initial_epsilon, 
-                    final_epsilon, 
-                    epsilon_decay, 
                     learning_rate, 
+                    epsilon,
                     gamma, 
                     batch_size, 
                     experience_buffer_size, 
@@ -21,9 +19,21 @@ class DoubleDQNAgent(DQNAgent):
                     architecture=None,
                     device='cpu'
                 ):
-        super().__init__(input_dim, action_dim, initial_epsilon, final_epsilon, 
-                        epsilon_decay, learning_rate, gamma, batch_size, experience_buffer_size, 
-                        target_network_sync_freq, checkpoint_freq, savedir, log_freq, architecture, device)
+        super().__init__(
+                        input_dim=input_dim, 
+                        action_dim=action_dim, 
+                        learning_rate=learning_rate, 
+                        epsilon=epsilon, 
+                        gamma=gamma, 
+                        batch_size=batch_size, 
+                        experience_buffer_size=experience_buffer_size, 
+                        target_network_sync_freq=target_network_sync_freq, 
+                        checkpoint_freq=checkpoint_freq, 
+                        savedir=savedir, 
+                        log_freq=log_freq, 
+                        architecture=architecture, 
+                        device=device
+                    )
 
     def calculate_loss(self):
         samples = self.exp_buffer.sample(self.batch_size)
