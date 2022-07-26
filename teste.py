@@ -28,9 +28,7 @@ def generate_graph(filename, scores):
     plt.close()
 
 if __name__ == '__main__':
-    file_name = "montecarloagent.pk"
-
-    num_timesteps = 3000
+    num_timesteps = 300000
     plot_every = 100
     debug_every = 100
     env_name = "CartPole-v0"
