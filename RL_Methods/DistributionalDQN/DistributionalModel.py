@@ -13,6 +13,7 @@ class DistributionalModel(Model):
         self.delta = (self.max_v - self.min_v) / (self.n_atoms - 1)
         super().__init__(input_dim, action_dim, learning_rate, architecture, device)
         self.register_buffer("support_vector", th.arange(self.min_v, self.max_v + self.delta, self.delta))
+        self.support_vector = self.support_vector.to(self.device)
         self.softmax = nn.Softmax(dim=2)
 
     def make_network(self, achitecture, input_dim, output_dim):
