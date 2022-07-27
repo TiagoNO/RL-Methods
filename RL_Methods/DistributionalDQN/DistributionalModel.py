@@ -26,7 +26,7 @@ class DistributionalModel(Model):
             net.add_module("activation_{}".format(i+1), activation())
             last_dim = net_arch[i]
         net.add_module("ouput", nn.Linear(last_dim, output_dim * self.n_atoms, bias=True))
-        return net
+        return net.to(self.device)
 
     def __str__(self) -> str:
         return torchinfo.summary(self.q_net, self.input_dim, device=self.device).__str__()
