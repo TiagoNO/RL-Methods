@@ -70,16 +70,16 @@ class DistributionalDQNAgent(DQNAgent):
         projection = th.zeros((batch_size, self.model.n_atoms), dtype=th.float32)
         for j in range(self.model.n_atoms):
             atom = self.model.min_v + (j * self.model.delta)
-            tz_j = np.clip(rewards + ((~dones) * self.gamma * atom), self.model.min_v, self.model.max_v)
+            tz_j = th.clip(rewards + ((~dones) * self.gamma * atom), self.model.min_v, self.model.max_v)
             b_j = (tz_j - self.model.min_v) / self.model.delta
-            l = np.floor(b_j).long()
-            u = np.ceil(b_j).long()
+            l = th.floor(b_j).long()
+            u = th.ceil(b_j).long()
             eq_mask = u == l
             projection[eq_mask, l[eq_mask]] += distrib[eq_mask, j]
             ne_mask = u != l
             projection[ne_mask, l[ne_mask]] += distrib[ne_mask, j] * (u - b_j)[ne_mask]
             projection[ne_mask, u[ne_mask]] += distrib[ne_mask, j] * (b_j - l)[ne_mask]
-        return th.tensor(projection, dtype=th.float32)
+        return projection
 
     @th.no_grad()
     def getAction(self, state, mask=None, deterministic=False):
