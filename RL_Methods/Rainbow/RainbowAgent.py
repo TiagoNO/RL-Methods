@@ -78,7 +78,7 @@ class RainbowAgent(DQNAgent):
             next_distrib = th.softmax(next_q_atoms, dim=2)
             next_best_distrib = next_distrib[range(samples.size), next_actions]
             # print(next_best_distrib)
-            projection = self.project_operator(next_best_distrib.numpy().cpu(), samples.rewards.numpy(), samples.dones.numpy())
+            projection = self.project_operator(next_best_distrib, samples.rewards, samples.dones)
 
         loss_v = (-state_log_prob * projection).sum(dim=1)
 
@@ -89,19 +89,20 @@ class RainbowAgent(DQNAgent):
 
     def project_operator(self, distrib, rewards, dones):
         batch_size = len(rewards)
-        projection = np.zeros((batch_size, self.model.n_atoms), dtype=np.float32)
+        projection = th.zeros((batch_size, self.model.n_atoms), dtype=th.float32)
         for j in range(self.model.n_atoms):
             atom = self.model.min_v + (j * self.model.delta)
-            tz_j = np.clip(rewards + ((1 - dones) * (self.gamma**self.trajectory_steps) * atom), self.model.min_v, self.model.max_v)
+            tz_j = np.clip(rewards + ((~dones) * self.gamma * atom), self.model.min_v, self.model.max_v)
             b_j = (tz_j - self.model.min_v) / self.model.delta
-            l = np.floor(b_j).astype(np.int64)
-            u = np.ceil(b_j).astype(np.int64)
+            l = np.floor(b_j).long()
+            u = np.ceil(b_j).long()
             eq_mask = u == l
             projection[eq_mask, l[eq_mask]] += distrib[eq_mask, j]
             ne_mask = u != l
             projection[ne_mask, l[ne_mask]] += distrib[ne_mask, j] * (u - b_j)[ne_mask]
             projection[ne_mask, u[ne_mask]] += distrib[ne_mask, j] * (b_j - l)[ne_mask]
         return th.tensor(projection, dtype=th.float32)
+
 
     def beginEpisode(self, state):
         for _ in range(len(self.trajectory)):
