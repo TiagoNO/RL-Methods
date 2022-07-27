@@ -67,7 +67,7 @@ class DistributionalDQNAgent(DQNAgent):
 
     def project_operator(self, distrib, rewards, dones):
         batch_size = len(rewards)
-        projection = th.zeros((batch_size, self.model.n_atoms), dtype=th.float32)
+        projection = th.zeros((batch_size, self.model.n_atoms), dtype=th.float32).to(self.model.device)
         for j in range(self.model.n_atoms):
             atom = self.model.min_v + (j * self.model.delta)
             tz_j = th.clip(rewards + ((~dones) * self.gamma * atom), self.model.min_v, self.model.max_v)
