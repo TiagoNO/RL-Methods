@@ -60,7 +60,7 @@ class DistributionalDQNAgent(DQNAgent):
             next_actions = th.argmax(next_q_values, dim=1)
             next_distrib = th.softmax(next_atoms, dim=2)
             next_best_distrib = next_distrib[range(samples.size), next_actions]
-            projection = self.project_operator(next_best_distrib.numpy(), samples.rewards.numpy(), samples.dones.numpy())
+            projection = self.project_operator(next_best_distrib.numpy().cpu(), samples.rewards.numpy(), samples.dones.numpy())
 
         loss_v = (-state_log_prob * projection)
         return loss_v.sum(dim=1).mean()

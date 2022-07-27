@@ -78,7 +78,7 @@ class RainbowAgent(DQNAgent):
             next_distrib = th.softmax(next_q_atoms, dim=2)
             next_best_distrib = next_distrib[range(samples.size), next_actions]
             # print(next_best_distrib)
-            projection = self.project_operator(next_best_distrib.numpy(), samples.rewards.numpy(), samples.dones.numpy())
+            projection = self.project_operator(next_best_distrib.numpy().cpu(), samples.rewards.numpy(), samples.dones.numpy())
 
         loss_v = (-state_log_prob * projection).sum(dim=1)
 
