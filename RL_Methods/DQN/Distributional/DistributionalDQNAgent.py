@@ -2,10 +2,9 @@ import torch as th
 import numpy as np
 
 from RL_Methods.DQN.DQNAgent import DQNAgent
-from RL_Methods.DistributionalDQN.DistributionalModel import DistributionalModel
+from RL_Methods.DQN.Distributional.DistributionalModel import DistributionalModel
 
 from RL_Methods.utils.Callback import Callback
-from RL_Methods.utils.Schedule import Schedule
 from RL_Methods.utils.Logger import Logger
 
 

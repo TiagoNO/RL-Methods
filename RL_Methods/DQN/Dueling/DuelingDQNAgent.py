@@ -1,7 +1,6 @@
 from RL_Methods.DQN.DQNAgent import DQNAgent
-from RL_Methods.DuelingDQN.DuelingModel import DuelingModel
+from RL_Methods.DQN.Dueling.DuelingModel import DuelingModel
 from RL_Methods.utils.Callback import Callback
-from RL_Methods.utils.Schedule import Schedule
 from RL_Methods.utils.Logger import Logger
 
 class DuelingDQNAgent(DQNAgent):

@@ -7,7 +7,7 @@ from RL_Methods.utils.Callback import Callback
 from RL_Methods.utils.Schedule import Schedule
 from RL_Methods.utils.Logger import Logger
 
-class PrioritizedDQN(DQNAgent):
+class PrioritizedDQNAgent(DQNAgent):
 
     def __init__(self, 
                     input_dim, 

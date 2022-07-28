@@ -1,9 +1,5 @@
-import torch as th
 import torch.nn as nn
-import torch.optim as optim
-import torch.nn.functional as F
-import torchinfo
-from RL_Methods.NoisyNetDQN.NoisyLinear import NoisyLinear, NoisyFactorizedLinear
+from RL_Methods.DQN.Noisy.NoisyLinear import NoisyLinear, NoisyFactorizedLinear
 from RL_Methods.DQN.Model import Model
 
 class NoisyModel(Model):

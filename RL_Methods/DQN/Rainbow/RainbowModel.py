@@ -1,5 +1,5 @@
-from RL_Methods.DuelingDQN.DuelingModel import DuelingModel
-from RL_Methods.NoisyNetDQN.NoisyLinear import NoisyLinear, NoisyFactorizedLinear
+from RL_Methods.DQN.Dueling.DuelingModel import DuelingModel
+from RL_Methods.DQN.Noisy.NoisyLinear import NoisyLinear, NoisyFactorizedLinear
 import torch.nn as nn
 import torch as th
 

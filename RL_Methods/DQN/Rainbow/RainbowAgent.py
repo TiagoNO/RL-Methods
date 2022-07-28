@@ -1,5 +1,5 @@
 from RL_Methods.DQN.DQNAgent import DQNAgent
-from RL_Methods.Rainbow.RainbowModel import RainbowModel
+from RL_Methods.DQN.Rainbow.RainbowModel import RainbowModel
 from RL_Methods.Buffers.PrioritizedReplayBuffer import PrioritizedReplayBuffer
 import torch as th
 import numpy as np
