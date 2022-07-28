@@ -138,9 +138,9 @@ class DQNAgent(Agent):
         print("| Learning rate: {}\t|".format(self.model.learning_rate.get()).expandtabs(45))
         print("| Epsilon: {}\t|".format(self.epsilon.get()).expandtabs(45))
         print("| Steps until sync: {}\t|".format(self.target_network_sync_freq - (self.num_timesteps % self.target_network_sync_freq)).expandtabs(45))
-        print("| Avg loss: {}\t|".format(np.mean(self.losses[-30:])).expandtabs(45))
+        if len(self.exp_buffer) > self.batch_size:
+            print("| Avg loss: {}\t|".format(np.mean(self.losses[-30:])).expandtabs(45))
         print("|" + "=" * 44 + "|")
-
 
     def save(self, file) -> None:
         self.model.save(file)
