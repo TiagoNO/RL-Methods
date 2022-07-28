@@ -1,12 +1,13 @@
 import gym
-from RL_Methods.DQN.DQNAgent import DQNAgent
-from RL_Methods.DDQN.DoubleDQNAgent import DoubleDQNAgent
-from RL_Methods.PrioritizedDQN.PrioritizedDQN import PrioritizedDQN
-from RL_Methods.DuelingDQN.DuelingDQNAgent import DuelingDQNAgent
-from RL_Methods.Rainbow.RainbowAgent import RainbowAgent
-from RL_Methods.MultiStepDQN.MultiStepDQNAgent import MultiStepDQNAgent
-from RL_Methods.NoisyNetDQN.NoisyNetDQNAgent import NoisyNetDQNAgent
-from RL_Methods.DistributionalDQN.DistributionalDQNAgent import DistributionalDQNAgent
+from RL_Methods.DQN import DQNAgent
+from RL_Methods.DQN import DoubleDQNAgent
+from RL_Methods.DQN import PrioritizedDQNAgent
+from RL_Methods.DQN import DuelingDQNAgent
+from RL_Methods.DQN import MultiStepDQNAgent
+from RL_Methods.DQN import NoisyNetDQNAgent
+from RL_Methods.DQN import DistributionalDQNAgent
+from RL_Methods.DQN import RainbowAgent
+
 from RL_Methods.utils.Callback import CheckpointCallback
 from RL_Methods.utils.Logger import Logger
 
@@ -124,7 +125,7 @@ if __name__ == '__main__':
 
 
     env = gym.make(env_name)
-    prioritizedDQNAgent = PrioritizedDQN(
+    prioritizedDQNAgent = PrioritizedDQNAgent(
                         env.observation_space.shape,
                         env.action_space.n,
                         learning_rate=LinearSchedule(initial_learning_rate, learning_rate_delta, final_learning_rate),
