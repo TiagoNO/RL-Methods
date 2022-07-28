@@ -108,7 +108,7 @@ class DuelingModel(nn.Module):
 
     def load(self, file):
         # print("Loading from: {}".format(file))
-        self.features_extractor.load_state_dict(th.load(file + "_feature_extractor.pt"))
-        self.advantage_net.load_state_dict(th.load(file + "_advantage_net.pt"))
-        self.value_net.load_state_dict(th.load(file + "_value_net.pt"))
+        self.features_extractor.load_state_dict(th.load(file + "_feature_extractor.pt", map_location=th.device(self.device)))
+        self.advantage_net.load_state_dict(th.load(file + "_advantage_net.pt", map_location=th.device(self.device)))
+        self.value_net.load_state_dict(th.load(file + "_value_net.pt", map_location=th.device(self.device)))
         self.sync()
