@@ -1,5 +1,3 @@
-from abc import abstractclassmethod
-import numpy as np
 
 class Schedule:
 
@@ -18,7 +16,7 @@ class Schedule:
     def get(self):
         return self.cur_value        
 
-class Constant(Schedule):
+class ConstantSchedule(Schedule):
     def __init__(self, initial_value) -> None:
         super().__init__(initial_value, 0, 0)
 
