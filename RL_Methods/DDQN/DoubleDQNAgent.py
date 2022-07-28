@@ -1,6 +1,8 @@
-from RL_Methods.DQN.DQNAgent import DQNAgent
-
 import torch as th
+
+from RL_Methods.DQN.DQNAgent import DQNAgent
+from RL_Methods.utils.Callback import Callback
+from RL_Methods.utils.Logger import Logger
 
 class DoubleDQNAgent(DQNAgent):
 
@@ -13,10 +15,11 @@ class DoubleDQNAgent(DQNAgent):
                     batch_size, 
                     experience_buffer_size, 
                     target_network_sync_freq,
-                    checkpoint_freq,
-                    savedir,
-                    log_freq,
+                    grad_norm_clip=1,
                     architecture=None,
+                    callbacks: Callback = None,
+                    logger: Logger = None,
+                    log_freq: int = 1,
                     device='cpu'
                 ):
         super().__init__(
@@ -28,10 +31,11 @@ class DoubleDQNAgent(DQNAgent):
                         batch_size=batch_size, 
                         experience_buffer_size=experience_buffer_size, 
                         target_network_sync_freq=target_network_sync_freq, 
-                        checkpoint_freq=checkpoint_freq, 
-                        savedir=savedir, 
-                        log_freq=log_freq, 
-                        architecture=architecture, 
+                        grad_norm_clip=grad_norm_clip,
+                        architecture=architecture,
+                        callbacks=callbacks,
+                        logger=logger,
+                        log_freq=log_freq,
                         device=device
                     )
 

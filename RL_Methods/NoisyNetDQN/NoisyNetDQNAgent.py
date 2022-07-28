@@ -1,8 +1,10 @@
 from RL_Methods.DQN.DQNAgent import DQNAgent
 from RL_Methods.NoisyNetDQN.NoisyModel import NoisyModel
 from RL_Methods.utils.Schedule import LinearSchedule
-import torch as th
-import numpy as np
+
+from RL_Methods.utils.Callback import Callback
+from RL_Methods.utils.Schedule import Schedule
+from RL_Methods.utils.Logger import Logger
 
 class NoisyNetDQNAgent(DQNAgent):
 
@@ -10,39 +12,41 @@ class NoisyNetDQNAgent(DQNAgent):
                     input_dim, 
                     action_dim, 
                     learning_rate,
-                    epsilon,
                     gamma, 
                     batch_size, 
                     experience_buffer_size, 
                     target_network_sync_freq,
                     sigma_init,
-                    checkpoint_freq,
-                    savedir,
-                    log_freq,
-                    architecture,
+                    grad_norm_clip=1,
+                    architecture=None,
+                    callbacks: Callback = None,
+                    logger: Logger = None,
+                    log_freq: int = 1,
                     device='cpu'
                 ):
                 
         self.sigma_init = sigma_init
+        # Using Noisy network, so we dont need e-greedy search
+        # but, for cartpole, initial small epsilon helps convergence
         super().__init__(
                         input_dim=input_dim, 
                         action_dim=action_dim, 
                         learning_rate=learning_rate,
-                        epsilon=epsilon,
+                        epsilon=LinearSchedule(0.1, -1e-4, 0.0),
                         gamma=gamma, 
                         batch_size=batch_size, 
                         experience_buffer_size=experience_buffer_size, 
                         target_network_sync_freq=target_network_sync_freq, 
-                        checkpoint_freq=checkpoint_freq, 
-                        savedir=savedir, 
-                        log_freq=log_freq, 
-                        architecture=architecture, 
+                        grad_norm_clip=grad_norm_clip,
+                        architecture=architecture,
+                        callbacks=callbacks,
+                        logger=logger,
+                        log_freq=log_freq,
                         device=device
                         )
 
-        # Using Noisy network, so we dont need e-greedy search
-        # but, for cartpole, initial small epsilon helps convergence
-        self.epsilon = LinearSchedule(0.1, epsilon.delta, 0.0)
+        if not self.logger is None:
+            self.logger.log("parameters/sigma_init", self.sigma_init)
 
-    def create_model(self, learning_rate, architecture, device):
+    def create_model(self, learning_rate, architecture, device) -> NoisyModel:
         return NoisyModel(self.input_dim, self.action_dim, learning_rate, self.sigma_init, architecture, device)

@@ -62,7 +62,7 @@ class Model(nn.Module):
         self.target_net.load_state_dict(self.q_net.state_dict())
 
     def save(self, file):
-        th.save(self.q_net.state_dict(), file)
+        th.save(self.q_net.state_dict(), file + ".pt")
 
     def load(self, file):
         self.q_net.load_state_dict(th.load(file, map_location=th.device(self.device)))

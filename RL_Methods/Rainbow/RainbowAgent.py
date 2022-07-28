@@ -1,55 +1,58 @@
-from matplotlib import projections
 from RL_Methods.DQN.DQNAgent import DQNAgent
 from RL_Methods.Rainbow.RainbowModel import RainbowModel
-from RL_Methods.DuelingDQN.DuelingModel import DuelingModel
-from RL_Methods.NoisyNetDQN.NoisyModel import NoisyModel
 from RL_Methods.Buffers.PrioritizedReplayBuffer import PrioritizedReplayBuffer
 import torch as th
 import numpy as np
 
+from RL_Methods.utils.Logger import Logger
+from RL_Methods.utils.Callback import Callback
 from RL_Methods.utils.Schedule import LinearSchedule, Schedule
-
 
 class RainbowAgent(DQNAgent):
 
-    def __init__(self, input_dim, 
-                       action_dim, 
-                       learning_rate : Schedule,
-                       epsilon : Schedule,
-                       gamma, 
-                       batch_size, 
-                       experience_buffer_size, 
-                       target_network_sync_freq,
-                       experience_prob_alpha, 
-                       experience_beta : Schedule, 
-                       trajectory_steps,
-                       initial_sigma,
-                       n_atoms,
-                       min_value,
-                       max_value,
-                       checkpoint_freq,
-                       savedir,
-                       log_freq,
-                       architecture,
-                       device='cpu'):
-        self.initial_sigma = initial_sigma
+    def __init__(self, 
+                    input_dim, 
+                    action_dim, 
+                    learning_rate : Schedule,
+                    gamma, 
+                    batch_size, 
+                    experience_buffer_size, 
+                    target_network_sync_freq,
+                    experience_prob_alpha, 
+                    experience_beta : Schedule, 
+                    trajectory_steps,
+                    sigma_init,
+                    n_atoms,
+                    min_value,
+                    max_value,
+                    grad_norm_clip=1,
+                    architecture=None,
+                    callbacks: Callback = None,
+                    logger: Logger = None,
+                    log_freq: int = 1,
+                    device='cpu'
+                    ):
+        self.sigma_init = sigma_init
         self.n_atoms = n_atoms
         self.min_value = min_value
         self.max_value = max_value
 
+        # Using Noisy network, so we dont need e-greedy search
+        # but, for cartpole, initial small epsilon helps convergence
         super().__init__(
                         input_dim=input_dim, 
                         action_dim=action_dim, 
                         learning_rate=learning_rate,
-                        epsilon=epsilon,
+                        epsilon=LinearSchedule(0.1, -1e-4, 0.0),
                         gamma=gamma, 
                         batch_size=batch_size, 
                         experience_buffer_size=experience_buffer_size, 
                         target_network_sync_freq=target_network_sync_freq, 
-                        checkpoint_freq=checkpoint_freq, 
-                        savedir=savedir, 
-                        log_freq=log_freq, 
-                        architecture=architecture, 
+                        grad_norm_clip=grad_norm_clip,
+                        architecture=architecture,
+                        callbacks=callbacks,
+                        logger=logger,
+                        log_freq=log_freq,
                         device=device
                         )
         self.exp_buffer = PrioritizedReplayBuffer(experience_buffer_size, input_dim, device, experience_prob_alpha)
@@ -57,12 +60,18 @@ class RainbowAgent(DQNAgent):
         self.trajectory_steps = trajectory_steps
         self.trajectory = []
 
-        # Using Noisy network, so we dont need e-greedy search
-        # but, for cartpole, initial small epsilon helps convergence
-        self.epsilon = LinearSchedule(0.1, epsilon.delta, 0.0)
+        if not self.logger is None:
+            self.logger.log("parameters/n_atoms", self.n_atoms)
+            self.logger.log("parameters/min_value", self.min_value)
+            self.logger.log("parameters/max_value", self.max_value)
+            self.logger.log("parameters/trajectory_steps", self.trajectory_steps)
+            self.logger.log("parameters/sigma_init", self.sigma_init)
+            self.logger.log("parameters/experience_beta_initial", self.beta.initial_value)
+            self.logger.log("parameters/experience_beta_final", self.beta.final_value)
+            self.logger.log("parameters/experience_beta_delta", self.beta.delta)
 
     def create_model(self, learning_rate, architecture, device):
-        return RainbowModel(self.input_dim, self.action_dim, learning_rate, self.initial_sigma, self.n_atoms, self.min_value, self.max_value, architecture, device)
+        return RainbowModel(self.input_dim, self.action_dim, learning_rate, self.sigma_init, self.n_atoms, self.min_value, self.max_value, architecture, device)
 
     def calculate_loss(self):
         samples = self.exp_buffer.sample(self.batch_size, self.beta.get())
@@ -85,6 +94,7 @@ class RainbowAgent(DQNAgent):
         loss_v *= samples.weights
         self.exp_buffer.update_priorities(samples.indices, loss_v.detach().cpu().numpy())
         self.beta.update()
+        self.logger.log("parameters/experience_beta", self.beta.get())
         return loss_v.mean()
 
     def project_operator(self, distrib, rewards, dones):
@@ -130,14 +140,15 @@ class RainbowAgent(DQNAgent):
             t_state, t_action, t_reward, t_done, t_next_state = self.getTrajectory()
             self.exp_buffer.add(t_state, t_action, t_reward, t_done, t_next_state)
             self.step()
-            self.epsilon.update()
-            self.model.update_learning_rate()
             self.trajectory.pop(0)
 
+        self.epsilon.update()
+        self.model.update_learning_rate()
         self.trajectory.append([state, action, reward, done, next_state])
 
-        if self.num_timesteps % self.checkpoint_freq  == 0:
-            self.save(self.savedir + "dqn_{}_steps.pt".format(self.num_timesteps))
+        if not self.logger is None and self.num_timesteps % self.log_freq == 0:
+            self.logger.log("parameters/learning_rate", self.model.learning_rate.get())
+            self.logger.log("parameters/epsilon", self.epsilon.get())
 
         if self.num_timesteps % self.target_network_sync_freq == 0:
             self.model.sync()

@@ -1,8 +1,13 @@
-from matplotlib import projections
-from RL_Methods.DQN.DQNAgent import DQNAgent
-from RL_Methods.DistributionalDQN.DistributionalModel import DistributionalModel
 import torch as th
 import numpy as np
+
+from RL_Methods.DQN.DQNAgent import DQNAgent
+from RL_Methods.DistributionalDQN.DistributionalModel import DistributionalModel
+
+from RL_Methods.utils.Callback import Callback
+from RL_Methods.utils.Schedule import Schedule
+from RL_Methods.utils.Logger import Logger
+
 
 class DistributionalDQNAgent(DQNAgent):
 
@@ -18,10 +23,11 @@ class DistributionalDQNAgent(DQNAgent):
                     n_atoms,
                     min_value,
                     max_value,
-                    checkpoint_freq,
-                    savedir,
-                    log_freq,
                     architecture,
+                    grad_norm_clip=1,
+                    callbacks: Callback = None,
+                    logger: Logger = None,
+                    log_freq: int = 1,
                     device='cpu'
                 ):
         self.n_atoms = n_atoms
@@ -36,12 +42,18 @@ class DistributionalDQNAgent(DQNAgent):
                         batch_size=batch_size, 
                         experience_buffer_size=experience_buffer_size, 
                         target_network_sync_freq=target_network_sync_freq, 
-                        checkpoint_freq=checkpoint_freq, 
-                        savedir=savedir, 
-                        log_freq=log_freq, 
-                        architecture=architecture, 
+                        grad_norm_clip=grad_norm_clip,
+                        architecture=architecture,
+                        callbacks=callbacks,
+                        logger=logger,
+                        log_freq=log_freq,
                         device=device
                         )
+
+        if not self.logger is None:
+            self.logger.log("parameters/n_atoms", self.n_atoms)
+            self.logger.log("parameters/min_value", self.min_value)
+            self.logger.log("parameters/max_value", self.max_value)
 
     def create_model(self, learning_rate, architecture, device):
         return DistributionalModel(self.input_dim, self.action_dim, learning_rate, self.n_atoms, self.min_value, self.max_value, architecture, device)

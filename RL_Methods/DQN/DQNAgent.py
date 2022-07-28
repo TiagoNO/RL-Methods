@@ -1,58 +1,74 @@
-from genericpath import isdir
+import os
+import gym
+import pickle
 import numpy as np
 import torch as th
-import pickle
-import os
 
 from RL_Methods.Agent import Agent
 from RL_Methods.DQN.Model import Model
 from RL_Methods.Buffers.ExperienceBuffer import ExperienceBuffer
+from RL_Methods.utils.Callback import Callback
 from RL_Methods.utils.Schedule import Schedule
-
-import gym
+from RL_Methods.utils.Logger import Logger
 
 class DQNAgent(Agent):
 
     def __init__(self, 
-                    input_dim, 
-                    action_dim, 
+                    input_dim : gym.Space, 
+                    action_dim : gym.Space, 
                     learning_rate: Schedule,
                     epsilon : Schedule,
-                    gamma, 
-                    batch_size, 
-                    experience_buffer_size,
-                    target_network_sync_freq, 
-                    checkpoint_freq=50000,
-                    savedir="",
-                    log_freq=1,
+                    gamma : float, 
+                    batch_size : int, 
+                    experience_buffer_size : int,
+                    target_network_sync_freq : int, 
+                    grad_norm_clip=1,
                     architecture=None,
+                    callbacks: Callback = None,
+                    logger: Logger = None,
+                    log_freq: int = 1,
                     device='cpu'
                 ):
-        
+        super().__init__(callbacks, logger, log_freq)
         self.input_dim = input_dim
         self.action_dim = action_dim
         self.epsilon = epsilon
         self.gamma = gamma
         self.batch_size = batch_size
-        self.savedir = savedir
-        if not os.path.isdir(self.savedir):
-            os.makedirs(self.savedir)
-
-        self.checkpoint_freq = checkpoint_freq
-        self.log_freq = log_freq
 
         self.num_timesteps = 0
-        self.losses = []
         self.target_network_sync_freq = target_network_sync_freq
 
         self.model = self.create_model(learning_rate, architecture, device)
         self.exp_buffer = ExperienceBuffer(experience_buffer_size, self.input_dim, device)
 
+        self.grad_norm_clip = grad_norm_clip
 
-    def create_model(self, learning_rate, architecture, device):
+        if not self.callbacks is None:
+            self.callbacks.set_agent(self)
+
+        if not self.logger is None:
+            self.logger.log("parameters/learning_rate_initial", self.model.learning_rate.initial_value)
+            self.logger.log("parameters/learning_rate_final", self.model.learning_rate.final_value)
+            self.logger.log("parameters/learning_rate_decay", self.model.learning_rate.delta)
+
+            self.logger.log("parameters/epsilon_initial", self.epsilon.initial_value)
+            self.logger.log("parameters/epsilon_final", self.epsilon.final_value)
+            self.logger.log("parameters/epsilon_decay", self.epsilon.delta)
+
+            self.logger.log("parameters/gamma", self.gamma)
+            self.logger.log("parameters/batch_size", self.batch_size)
+            self.logger.log("parameters/experience_buffer_size", experience_buffer_size)
+            self.logger.log("parameters/target_network_sync_freq", self.target_network_sync_freq)
+            self.logger.log("parameters/grad_norm_clip", self.grad_norm_clip)
+
+        self.losses = []
+
+
+    def create_model(self, learning_rate, architecture, device) -> Model:
         return Model(self.input_dim, self.action_dim, learning_rate, architecture, device)
 
-    def getAction(self, state, mask=None, deterministic=False):
+    def getAction(self, state, mask=None, deterministic=False) -> int:
         if mask is None:
             mask = np.ones(self.action_dim, dtype=np.bool)
 
@@ -69,7 +85,7 @@ class DQNAgent(Agent):
                 q_values[mask] = -th.inf
                 return q_values.argmax().item()
 
-    def calculate_loss(self):
+    def calculate_loss(self) -> th.Tensor:
         samples = self.exp_buffer.sample(self.batch_size)
 
         # calculating q-values for states
@@ -86,48 +102,37 @@ class DQNAgent(Agent):
 
         return self.model.loss_func(states_action_values, expected_state_action_values).mean()
 
-    def step(self):
+    def step(self) -> None:
         if len(self.exp_buffer) < self.batch_size:
             return
 
         self.model.train(True)
         loss = self.calculate_loss()
         self.model.optimizer.zero_grad()
+        
         self.losses.append(loss.item())
+        if not self.logger is None and self.num_timesteps % self.log_freq == 0:
+            self.logger.log("train/loss", loss.item())
+
         loss.backward()
-
-        # total_norm = 0
-        # for p in self.model.q_net.parameters():
-        #     param_norm = p.grad.data.norm(2)
-        #     total_norm += param_norm.item() ** 2
-        # total_norm = total_norm ** (1. / 2)
-        # print(total_norm)
-
-        th.nn.utils.clip_grad_norm_(self.model.parameters(), 20)
+        th.nn.utils.clip_grad_norm_(self.model.parameters(), self.grad_norm_clip)
         self.model.optimizer.step()
 
-    def endEpisode(self):
-        self.save(self.savedir + "dqn_current.pt")
 
-        if self.num_timesteps % self.log_freq == 0:
-            self.logData()
-
-    def endTrainning(self):
-        self.save(self.savedir + "dqn_last.pt")
-
-    def update(self, state, action, reward, done, next_state, info):
+    def update(self, state, action, reward, done, next_state, info) -> None:
         self.exp_buffer.add(state, action, reward, done, next_state)
         self.step()
         self.epsilon.update()
         self.model.update_learning_rate()
 
-        if self.num_timesteps % self.checkpoint_freq  == 0:
-            self.save(self.savedir + "dqn_{}_steps.pt".format(self.num_timesteps))
+        if not self.logger is None and self.num_timesteps % self.log_freq == 0:
+            self.logger.log("parameters/learning_rate", self.model.learning_rate.get())
+            self.logger.log("parameters/epsilon", self.epsilon.get())
 
         if self.num_timesteps % self.target_network_sync_freq == 0:
             self.model.sync()
 
-    def print(self):
+    def print(self) -> None:
         super().print()
         print("| {}\t|".format(self.__class__.__name__).expandtabs(45))
         print("| Learning rate: {}\t|".format(self.model.learning_rate.get()).expandtabs(45))
@@ -135,27 +140,16 @@ class DQNAgent(Agent):
         print("| Steps until sync: {}\t|".format(self.target_network_sync_freq - (self.num_timesteps % self.target_network_sync_freq)).expandtabs(45))
         print("| Avg loss: {}\t|".format(np.mean(self.losses[-30:])).expandtabs(45))
         print("|" + "=" * 44 + "|")
-    
-
-    def logData(self):
-        log_file = open(self.savedir + "log.txt", "a")
-        log_file.write("{};".format(self.num_episodes))
-        log_file.write("{};".format(self.num_timesteps))
-        log_file.write("{};".format(np.mean(self.scores[-100:])))
-        log_file.write("{};".format(self.model.learning_rate.get()))
-        log_file.write("{};".format(self.epsilon.get()))
-        log_file.write("{};".format(np.mean(self.losses[-30:])))
-        log_file.write("\n")
 
 
-    def save(self, file):
+    def save(self, file) -> None:
         self.model.save(file)
 
-    def load(self, file):
+    def load(self, file) -> None:
         print("Loading from: {}".format(file))
         self.model.load(file)
+
         try:
             self.exp_buffer = pickle.load(open(self.savedir + "experience_buffer.txt", 'rb'))
         except:
             print("Could not load Experience buffer... reseting experiences")
-            

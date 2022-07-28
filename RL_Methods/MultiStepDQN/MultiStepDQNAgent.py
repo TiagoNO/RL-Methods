@@ -1,5 +1,11 @@
 from RL_Methods.DQN.DQNAgent import DQNAgent
 import torch as th
+
+from RL_Methods.utils.Callback import Callback
+from RL_Methods.utils.Schedule import Schedule
+from RL_Methods.utils.Logger import Logger
+
+
 class MultiStepDQNAgent(DQNAgent):
 
     def __init__(self, 
@@ -12,10 +18,11 @@ class MultiStepDQNAgent(DQNAgent):
                     experience_buffer_size, 
                     target_network_sync_freq,
                     trajectory_steps,
-                    checkpoint_freq,
-                    savedir,
-                    log_freq,
                     architecture,
+                    grad_norm_clip=1,
+                    callbacks: Callback = None,
+                    logger: Logger = None,
+                    log_freq: int = 1,
                     device='cpu'
                 ):
         
@@ -28,14 +35,18 @@ class MultiStepDQNAgent(DQNAgent):
                         batch_size=batch_size, 
                         experience_buffer_size=experience_buffer_size, 
                         target_network_sync_freq=target_network_sync_freq, 
-                        checkpoint_freq=checkpoint_freq, 
-                        savedir=savedir, 
-                        log_freq=log_freq, 
-                        architecture=architecture, 
+                        grad_norm_clip=grad_norm_clip,
+                        architecture=architecture,
+                        callbacks=callbacks,
+                        logger=logger,
+                        log_freq=log_freq,
                         device=device
                         )
         self.trajectory_steps = trajectory_steps
         self.trajectory = []
+
+        if not self.logger is None:
+            self.logger.log("parameters/trajectory_steps", self.trajectory_steps)
 
     def beginEpisode(self, state):
         for _ in range(len(self.trajectory)):
@@ -80,14 +91,15 @@ class MultiStepDQNAgent(DQNAgent):
             t_state, t_action, t_reward, t_done, t_next_state = self.getTrajectory()
             self.exp_buffer.add(t_state, t_action, t_reward, t_done, t_next_state)
             self.step()
-            self.epsilon.update()
-            self.model.update_learning_rate()
             self.trajectory.pop(0)
 
+        self.epsilon.update()
+        self.model.update_learning_rate()
         self.trajectory.append([state, action, reward, done, next_state])
 
-        if self.num_timesteps % self.checkpoint_freq  == 0:
-            self.save(self.savedir + "dqn_{}_steps.pt".format(self.num_timesteps))
+        if not self.logger is None and self.num_timesteps % self.log_freq == 0:
+            self.logger.log("parameters/learning_rate", self.model.learning_rate.get())
+            self.logger.log("parameters/epsilon", self.epsilon.get())
 
         if self.num_timesteps % self.target_network_sync_freq == 0:
             self.model.sync()
