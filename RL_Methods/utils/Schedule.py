@@ -9,12 +9,7 @@ class Schedule:
         self.delta = delta
         self.cur_value = self.initial_value
 
-    @abstractclassmethod
     def update(self):
-        pass
-
-    @abstractclassmethod
-    def update(self, delta):
         pass
 
     def reset(self):
@@ -23,10 +18,14 @@ class Schedule:
     def get(self):
         return self.cur_value        
 
+class Constant(Schedule):
+    def __init__(self, initial_value) -> None:
+        super().__init__(initial_value, 0, 0)
+
 
 class LinearSchedule (Schedule):
 
-    def __init__(self, initial_value, delta=0, final_value=None) -> None:
+    def __init__(self, initial_value, delta, final_value=None) -> None:
         super().__init__(initial_value, delta, final_value)
 
     def update(self):
@@ -38,14 +37,3 @@ class LinearSchedule (Schedule):
 
         elif self.delta < 0:
             self.cur_value = max(self.cur_value + self.delta, self.final_value)
-
-class DivisionSchedule(Schedule):
-
-    def __init__(self, initial_value, delta=0, final_value=None) -> None:
-        super().__init__(initial_value, delta, final_value)
-
-    def update(self, delta):
-        if self.final_value is None:
-            self.cur_value = self.initial_value / delta
-        else:
-            self.cur_value = max(self.initial_value / delta, self.final_value)
