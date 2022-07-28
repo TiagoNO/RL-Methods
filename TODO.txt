@@ -1,7 +1,13 @@
-[v] Double Q-Learning
-[v] Prioritized replay
-[v] Dueling networks
-[v] Multi-step Learning
-[v] Noisy networks
-[v] Distributional RL
-[x] Boltzmann Softmax DQN
+DQN:
+    [v] DQN vanilla
+    [v] Double Q-Learning
+    [v] Prioritized replay
+    [v] Dueling networks
+    [v] Multi-step Learning
+    [v] Noisy networks
+    [v] Distributional RL
+    [v] Rainbow
+    [x] Boltzmann Softmax DQN
+
+QLearning:
+    
