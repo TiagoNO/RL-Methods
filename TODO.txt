@@ -10,4 +10,5 @@ DQN:
     [x] Boltzmann Softmax DQN
 
 QLearning:
-    
+    [v] QLearning vanilla
+    [v] Double QLearning
