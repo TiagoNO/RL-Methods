@@ -59,6 +59,9 @@ class Logger:
 
     def load(self, filename=None):
         self.data = self.retrieve(filename)
+        if len(self.data.keys()) > 0:
+            return True 
+        return False
 
 # logger = Logger("experiments/logger/teste")
 # logger.log("parameters/alpha", 10)
