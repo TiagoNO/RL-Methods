@@ -90,6 +90,7 @@ class Agent:
 
         self.endTrainning()
         self.callbacks.endTrainning()
+        self.logger.dump()
 
     def test(self, env, n_episodes):
         self.total_test_episodes = n_episodes
