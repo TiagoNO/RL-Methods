@@ -25,6 +25,7 @@ class PrioritizedDQNAgent(DQNAgent):
                     callbacks: Callback = None,
                     logger: Logger = None,
                     log_freq: int = 1,
+                    save_log_every=100,
                     device='cpu'
                     ):
         super().__init__(
@@ -41,6 +42,7 @@ class PrioritizedDQNAgent(DQNAgent):
                         callbacks=callbacks,
                         logger=logger,
                         log_freq=log_freq,
+                        save_log_every=save_log_every,
                         device=device
                         )
         self.exp_buffer = PrioritizedReplayBuffer(experience_buffer_size, input_dim, device, experience_prob_alpha)

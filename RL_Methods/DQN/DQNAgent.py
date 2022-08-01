@@ -27,9 +27,10 @@ class DQNAgent(Agent):
                     callbacks: Callback = None,
                     logger: Logger = None,
                     log_freq: int = 1,
+                    save_log_every=100,
                     device='cpu'
                 ):
-        super().__init__(callbacks, logger, log_freq)
+        super().__init__(callbacks, logger, log_freq, save_log_every)
         self.input_dim = input_dim
         self.action_dim = action_dim
         self.epsilon = epsilon
@@ -133,7 +134,8 @@ class DQNAgent(Agent):
             self.model.sync()
 
     def print(self) -> None:
-        super().print()
+        super().print()        # value = round(value, 8)
+
         print("| {}\t|".format(self.__class__.__name__).expandtabs(45))
         print("| Learning rate: {}\t|".format(self.model.learning_rate.get()).expandtabs(45))
         print("| Epsilon: {}\t|".format(self.epsilon.get()).expandtabs(45))

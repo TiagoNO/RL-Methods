@@ -19,6 +19,7 @@ class DuelingDQNAgent(DQNAgent):
                     callbacks: Callback = None,
                     logger: Logger = None,
                     log_freq: int = 1,
+                    save_log_every=100,
                     device='cpu'
                 ):
                 
@@ -36,6 +37,7 @@ class DuelingDQNAgent(DQNAgent):
                         callbacks=callbacks,
                         logger=logger,
                         log_freq=log_freq,
+                        save_log_every=save_log_every,
                         device=device
                         )
 
