@@ -6,7 +6,7 @@ import gym
 
 class Agent:
 
-    def __init__(self, callbacks : Callback = None, logger : Logger = None, log_freq=1) -> None:
+    def __init__(self, callbacks : Callback = None, logger : Logger = None, log_freq=1, save_log_every=100) -> None:
         self.callbacks = callbacks
         if self.callbacks is None:
             self.callbacks = Callback()
@@ -16,6 +16,7 @@ class Agent:
             logger.log("parameters/log_freq", log_freq)
 
         self.log_freq = log_freq
+        self.save_log_every = save_log_every
 
     def beginTrainning(self):
         pass
@@ -84,7 +85,8 @@ class Agent:
 
             if not self.logger is None:
                 self.logger.log("train/avg_ep_rewards", np.mean(self.scores[-100:]))
-                self.logger.dump()
+                if self.num_timesteps % self.save_log_every == 0:
+                    self.logger.dump()
 
         self.endTrainning()
         self.callbacks.endTrainning()
