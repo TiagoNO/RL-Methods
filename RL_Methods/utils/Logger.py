@@ -1,4 +1,3 @@
-from genericpath import isfile
 import os
 import json 
 
@@ -26,7 +25,7 @@ class Logger:
         values['data'].append(value)
 
     def merge(self, values, target):
-        print(values, target)
+        # print(values, target)
         if 'data' in target:
             if 'data' in values:
                 values['data'].extend(target['data'])
@@ -45,7 +44,7 @@ class Logger:
         self.data = self.merge(loaded_data, self.data)
         with open(self.directory + self.filename, 'w') as f:
             json.dump(self.data, f)
-        self.data.clear()
+        self.clear()
 
     def retrieve(self, filename=None):
         if filename is None:
@@ -57,11 +56,23 @@ class Logger:
         except:
             return {}
 
+    def clear(self):
+        self.data.clear()
+
     def load(self, filename=None):
         self.data = self.retrieve(filename)
         if len(self.data.keys()) > 0:
             return True 
         return False
+
+    def ___getitem__(self, key):
+        return self.data[key]
+        
+    def __setitem__(self, key, value):
+        pass
+
+    def __delitem__(self, idx):
+        pass
 
 # logger = Logger("experiments/logger/teste")
 # logger.log("parameters/alpha", 10)

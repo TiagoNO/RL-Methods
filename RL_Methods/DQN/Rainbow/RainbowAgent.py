@@ -68,6 +68,7 @@ class RainbowAgent(DQNAgent):
             self.logger.log("parameters/max_value", self.max_value)
             self.logger.log("parameters/trajectory_steps", self.trajectory_steps)
             self.logger.log("parameters/sigma_init", self.sigma_init)
+            self.logger.log("parameters/experience_prob_alpha", experience_prob_alpha)
             self.logger.log("parameters/experience_beta_initial", self.beta.initial_value)
             self.logger.log("parameters/experience_beta_final", self.beta.final_value)
             self.logger.log("parameters/experience_beta_delta", self.beta.delta)
