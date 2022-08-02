@@ -14,6 +14,7 @@ class Agent:
         self.logger = logger
         if not self.logger is None:
             logger.log("parameters/log_freq", log_freq)
+            logger.log("parameters/save_log_every", log_freq)
 
         self.log_freq = log_freq
         self.save_log_every = save_log_every
@@ -101,10 +102,14 @@ class Agent:
         for self.num_test_episodes in range(self.total_test_episodes):
             obs = env.reset()
             done = False
+            action_mask = None
             score = 0
             while not done:
-                action = self.getAction(obs, deterministic=True)
-                obs, reward, done, _ = env.step(action)
+                action = self.getAction(obs, deterministic=True, mask=action_mask)
+                obs, reward, done, info = env.step(action)
+                if 'mask' in info:
+                    action_mask = info['mask']
+
                 score += reward
                 env.render()   
             self.test_scores[self.num_test_episodes] = score

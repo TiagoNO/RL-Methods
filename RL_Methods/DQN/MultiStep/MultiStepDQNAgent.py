@@ -105,3 +105,12 @@ class MultiStepDQNAgent(DQNAgent):
 
         if self.num_timesteps % self.target_network_sync_freq == 0:
             self.model.sync()
+
+
+    def loadParameters(self):
+        if not self.logger.load():
+            return
+
+        super().loadParameters()
+        
+        self.trajectory_steps = self.logger.data['parameters']['trajectory_steps']['data'][-1]

@@ -113,3 +113,14 @@ class DistributionalDQNAgent(DQNAgent):
                 q_values = q_values.squeeze(0)
                 q_values[mask] = -th.inf
                 return q_values.argmax().item()
+
+    def loadParameters(self):
+        if not self.logger.load():
+            return
+
+        super().loadParameters()
+        self.n_atoms = self.logger.data['parameters']['n_atoms']['data'][-1]
+        self.min_value = self.logger.data['parameters']['min_value']['data'][-1]
+        self.max_value = self.logger.data['parameters']['max_value']['data'][-1]
+        
+        self.model = self.create_model(self.model.learning_rate, self.architecture, self.model.device)

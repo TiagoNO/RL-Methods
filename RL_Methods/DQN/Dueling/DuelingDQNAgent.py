@@ -43,3 +43,4 @@ class DuelingDQNAgent(DQNAgent):
 
     def create_model(self, learning_rate, architecture, device):
         return DuelingModel(self.input_dim, self.action_dim, learning_rate, architecture, device)
+        

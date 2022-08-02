@@ -76,3 +76,16 @@ class PrioritizedDQNAgent(DQNAgent):
 
     def endEpisode(self):
         super().endEpisode()
+
+    def loadParameters(self):
+        if not self.logger.load():
+            return
+
+        super().loadParameters()
+        
+        self.experience_prob_alpha = self.logger.data['parameters']['experience_prob_alpha']['data'][-1]
+
+        self.beta.cur_value = self.logger.data['parameters']['experience_beta']['data'][-1]
+        self.beta.final_value = self.logger.data['parameters']['experience_beta_final']['data'][-1]
+        self.beta.delta = self.logger.data['parameters']['experience_beta_delta']['data'][-1]
+        # self.exp_buffer = PrioritizedReplayBuffer(self.experience_buffer_sz, self.input_dim, self.model.device, self.experience_prob_alpha)

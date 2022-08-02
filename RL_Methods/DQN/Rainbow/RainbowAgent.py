@@ -44,7 +44,7 @@ class RainbowAgent(DQNAgent):
                         input_dim=input_dim, 
                         action_dim=action_dim, 
                         learning_rate=learning_rate,
-                        epsilon=LinearSchedule(0.1, -1e-4, 0.0),
+                        epsilon=LinearSchedule(0.0, -1e-4, 0.0),
                         gamma=gamma, 
                         batch_size=batch_size, 
                         experience_buffer_size=experience_buffer_size, 
@@ -179,4 +179,22 @@ class RainbowAgent(DQNAgent):
                 q_values, _ = self.model.q_values(state)
                 q_values = q_values.squeeze(0)
                 q_values[mask] = -th.inf
+                print(q_values)
                 return q_values.argmax().item()
+
+    def loadParameters(self):
+        if not self.logger.load():
+            return
+
+        super().loadParameters()
+
+        self.experience_prob_alpha = self.logger.data['parameters']['experience_prob_alpha']['data'][-1]
+        self.beta.cur_value = self.logger.data['parameters']['experience_beta']['data'][-1]
+        self.beta.final_value = self.logger.data['parameters']['experience_beta_final']['data'][-1]
+        self.beta.delta = self.logger.data['parameters']['experience_beta_delta']['data'][-1]
+
+        self.trajectory_steps = self.logger.data['parameters']['trajectory_steps']['data'][-1]
+        self.sigma_init = self.logger.data['parameters']['sigma_init']['data'][-1]
+        self.n_atoms = self.logger.data['parameters']['n_atoms']['data'][-1]
+        self.min_value = self.logger.data['parameters']['min_value']['data'][-1]
+        self.max_value = self.logger.data['parameters']['max_value']['data'][-1]

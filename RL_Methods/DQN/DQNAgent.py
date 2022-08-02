@@ -29,13 +29,14 @@ class DQNAgent(Agent):
                     log_freq: int = 1,
                     save_log_every=100,
                     device='cpu'
-                ):
+                ):        
         super().__init__(callbacks, logger, log_freq, save_log_every)
         self.input_dim = input_dim
         self.action_dim = action_dim
         self.epsilon = epsilon
         self.gamma = gamma
         self.batch_size = batch_size
+        self.architecture = architecture
 
         self.num_timesteps = 0
         self.target_network_sync_freq = target_network_sync_freq
@@ -155,3 +156,28 @@ class DQNAgent(Agent):
             self.exp_buffer = pickle.load(open(self.savedir + "experience_buffer.txt", 'rb'))
         except:
             print("Could not load Experience buffer... reseting experiences")
+
+        try:
+            self.loadParameters()
+            self.logger.clear()
+        except:
+            print("Could not load parameters from log... using the ones given in constructor")
+            
+
+    def loadParameters(self):
+        if not self.logger.load():
+            return
+
+        self.model.learning_rate.cur_value = self.logger.data['parameters']['learning_rate']['data'][-1]
+        self.model.learning_rate.final_value = self.logger.data['parameters']['learning_rate_final']['data'][-1]
+        self.model.learning_rate.delta = self.logger.data['parameters']['learning_rate_decay']['data'][-1]
+
+        self.epsilon.cur_value = self.logger.data['parameters']['epsilon']['data'][-1]
+        self.epsilon.final_value = self.logger.data['parameters']['epsilon_final']['data'][-1]
+        self.epsilon.delta = self.logger.data['parameters']['epsilon_decay']['data'][-1]
+
+        self.gamma = self.logger.data['parameters']['gamma']['data'][-1]
+        self.batch_size = self.logger.data['parameters']['batch_size']['data'][-1]
+        self.experience_buffer_sz = self.logger.data['parameters']['experience_buffer_size']['data'][-1]
+        self.target_network_sync_freq = self.logger.data['parameters']['target_network_sync_freq']['data'][-1]
+        self.grad_norm_clip = self.logger.data['parameters']['grad_norm_clip']['data'][-1]

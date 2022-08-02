@@ -51,3 +51,11 @@ class NoisyNetDQNAgent(DQNAgent):
 
     def create_model(self, learning_rate, architecture, device) -> NoisyModel:
         return NoisyModel(self.input_dim, self.action_dim, learning_rate, self.sigma_init, architecture, device)
+
+    def loadParameters(self):
+        if not self.logger.load():
+            return
+
+        super().loadParameters()
+        self.sigma_init = self.logger.data['parameters']['sigma_init']['data'][-1]
+        
