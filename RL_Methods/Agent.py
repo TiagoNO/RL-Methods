@@ -4,20 +4,17 @@ from RL_Methods.utils.Callback import Callback
 from RL_Methods.utils.Logger import Logger
 import gym
 
+from RL_Methods.utils.Schedule import Schedule
+
 class Agent:
 
     def __init__(self, callbacks : Callback = None, logger : Logger = None, log_freq=1, save_log_every=100) -> None:
-        self.callbacks = callbacks
-        if self.callbacks is None:
-            self.callbacks = Callback()
-
         self.logger = logger
-        if not self.logger is None:
-            logger.log("parameters/log_freq", log_freq)
-            logger.log("parameters/save_log_every", log_freq)
-
-        self.log_freq = log_freq
-        self.save_log_every = save_log_every
+        self.callbacks = callbacks
+        
+        self.parameters = {}
+        self.parameters['log_freq'] = log_freq
+        self.parameters['save_log_every'] = save_log_every
 
     def beginTrainning(self):
         pass
@@ -40,7 +37,7 @@ class Agent:
     def print(self):
         print("\n\n")
         print("|" + "=" * 44 + "|")
-        print("|Agent\t|".expandtabs(45))
+        print("|{}\t|".format(self.__class__.__name__).expandtabs(45))
         print("|Episode {}\t|".format(self.num_episodes+1).expandtabs(45))
         print("|Time steps {}/{}\t|".format(self.num_timesteps, self.total_timesteps).expandtabs(45))
         print("|Episode Score {}\t|".format(self.scores[self.num_episodes]).expandtabs(45))
@@ -54,7 +51,8 @@ class Agent:
         self.num_episodes = 0
 
         self.beginTrainning()
-        self.callbacks.beginTrainning()
+        if not self.callbacks is None:
+            self.callbacks.beginTrainning()
         
         while self.num_timesteps < total_timesteps:
             obs = env.reset()
@@ -62,7 +60,8 @@ class Agent:
             action_mask = None
             score = 0
             self.beginEpisode(obs)
-            self.callbacks.beginEpisode()
+            if not self.callbacks is None:
+                self.callbacks.beginEpisode()
 
             while not done:
                 action = self.getAction(obs, mask=action_mask)
@@ -72,8 +71,9 @@ class Agent:
                     action_mask = info['mask']
 
                 self.update(obs, action, reward, done, obs_, info)                
-                self.callbacks.update()
-                
+                if not self.callbacks is None:
+                    self.callbacks.update()
+            
                 score += reward
                 obs = obs_     
                 self.num_timesteps += 1
@@ -81,16 +81,18 @@ class Agent:
             self.scores.append(score)
             self.print()
             self.endEpisode()
-            self.callbacks.endEpisode()
+            if not self.callbacks is None:
+                self.callbacks.endEpisode()
             self.num_episodes+=1
 
             if not self.logger is None:
                 self.logger.log("train/avg_ep_rewards", np.mean(self.scores[-100:]))
-                if self.num_timesteps % self.save_log_every == 0:
+                if self.num_timesteps % self.parameters['save_log_every'] == 0:
                     self.logger.dump()
 
         self.endTrainning()
-        self.callbacks.endTrainning()
+        if not self.callbacks is None:
+            self.callbacks.endTrainning()
         self.logger.dump()
 
     def test(self, env, n_episodes):
@@ -114,7 +116,7 @@ class Agent:
                 env.render()   
             self.test_scores[self.num_test_episodes] = score
             print("|" + "=" * 44 + "|")
-            print("|Agent\t|".format(self.num_episodes+1).expandtabs(45))
+            print("|{}\t|".format(self.__class__.__name__).expandtabs(45))
             print("|Episode {}/{}\t|".format(self.num_test_episodes+1, self.total_test_episodes).expandtabs(45))
             print("|Episode Score {}\t|".format(score).expandtabs(45))
             print("|Avg score {}\t|".format(round(np.mean(self.test_scores[0:self.num_test_episodes+1]), 2)).expandtabs(45))
@@ -123,5 +125,6 @@ class Agent:
     def save(self, filename):
         pass
 
+    @staticmethod
     def load(self, filename):
         pass
