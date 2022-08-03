@@ -7,7 +7,6 @@ def zip_files(directory, dest_name):
     for files in os.listdir(directory):
         absfile = os.path.abspath(os.path.join(directory, files))
         arcname = absfile[absfile.rfind("/")+1:]
-        print(absfile, arcname)
         zf.write(absfile, arcname)
     zf.close()
 

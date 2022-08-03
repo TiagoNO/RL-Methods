@@ -121,10 +121,6 @@ class DQNAgent(Agent):
         model_file = "{}/{}".format(directory, prefix)
         parameters_file = "{}/{}_parameters".format(directory, prefix)
         buffer_file = "{}/{}_buffer".format(directory, prefix)
-        print(directory)
-        print(model_file)
-        print(parameters_file)
-        print(buffer_file)
 
         self.model.save(model_file)
         pickle.dump(self.parameters, open(parameters_file, "wb"))
@@ -133,7 +129,7 @@ class DQNAgent(Agent):
 
         zip_files(directory, directory)
         for files in os.listdir(directory):
-            print(os.path.join(directory, files))
+            # print(os.path.join(directory, files))
             os.remove(os.path.join(directory, files))
         os.removedirs(directory)
 
@@ -151,7 +147,7 @@ class DQNAgent(Agent):
         buffer_file = "{}/{}_buffer".format(directory, prefix)
 
         parameters = pickle.load(open(parameters_file, "rb"))
-        print(parameters)
+        # print(parameters)
         agent = cls(
             **parameters,
             logger=logger,
@@ -165,7 +161,7 @@ class DQNAgent(Agent):
             print("Could not load exp buffer...")
 
         for files in os.listdir(directory):
-            print(os.path.join(directory, files))
+            # print(os.path.join(directory, files))
             os.remove(os.path.join(directory, files))
         os.removedirs(directory)
         return agent
