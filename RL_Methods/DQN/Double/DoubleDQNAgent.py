@@ -42,12 +42,12 @@ class DoubleDQNAgent(DQNAgent):
                     )
 
     def calculate_loss(self):
-        samples = self.exp_buffer.sample(self.batch_size)
+        samples = self.exp_buffer.sample(self.parameters['batch_size'])
 
         states_action_values = self.model.q_values(samples.states).gather(1, samples.actions.unsqueeze(-1)).squeeze(-1)
         with th.no_grad():
             next_actions = self.model.q_values(samples.next_states).argmax(dim=1)
             next_states_values = self.model.q_target(samples.next_states).gather(1, next_actions.unsqueeze(-1)).squeeze(-1)
-            expected_state_action_values = samples.rewards + ((~samples.dones) * self.gamma * next_states_values)
+            expected_state_action_values = samples.rewards + ((~samples.dones) * self.parameters['gamma'] * next_states_values)
 
         return self.model.loss_func(states_action_values, expected_state_action_values).mean()

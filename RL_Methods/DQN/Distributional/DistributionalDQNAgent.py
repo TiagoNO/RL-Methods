@@ -30,9 +30,6 @@ class DistributionalDQNAgent(DQNAgent):
                     save_log_every=100,
                     device='cpu'
                 ):
-        self.n_atoms = n_atoms
-        self.min_value = min_value
-        self.max_value = max_value
         super().__init__(
                         input_dim=input_dim, 
                         action_dim=action_dim, 
@@ -50,17 +47,13 @@ class DistributionalDQNAgent(DQNAgent):
                         save_log_every=save_log_every,
                         device=device
                         )
-
-        if not self.logger is None:
-            self.logger.log("parameters/n_atoms", self.n_atoms)
-            self.logger.log("parameters/min_value", self.min_value)
-            self.logger.log("parameters/max_value", self.max_value)
-
-    def create_model(self, learning_rate, architecture, device):
-        return DistributionalModel(self.input_dim, self.action_dim, learning_rate, self.n_atoms, self.min_value, self.max_value, architecture, device)
+        self.parameters['n_atoms'] = n_atoms
+        self.parameters['min_value'] = min_value
+        self.parameters['max_value'] = max_value
+        self.model = DistributionalModel(input_dim, action_dim, learning_rate, n_atoms, min_value, max_value, architecture, device)
 
     def calculate_loss(self):
-        samples = self.exp_buffer.sample(self.batch_size)
+        samples = self.exp_buffer.sample(self.parameters['batch_size'])
 
         # calculating q_values distribution
         _, q_atoms = self.model.q_values(samples.states)
@@ -83,7 +76,7 @@ class DistributionalDQNAgent(DQNAgent):
         projection = th.zeros((batch_size, self.model.n_atoms), dtype=th.float32).to(self.model.device)
         for j in range(self.model.n_atoms):
             atom = self.model.min_v + (j * self.model.delta)
-            tz_j = th.clip(rewards + ((~dones) * self.gamma * atom), self.model.min_v, self.model.max_v)
+            tz_j = th.clip(rewards + ((~dones) * self.parameters['gamma'] * atom), self.model.min_v, self.model.max_v)
             b_j = (tz_j - self.model.min_v) / self.model.delta
             l = th.floor(b_j).long()
             u = th.ceil(b_j).long()
@@ -98,12 +91,12 @@ class DistributionalDQNAgent(DQNAgent):
     def getAction(self, state, mask=None, deterministic=False):
         self.model.train(True)
         if mask is None:
-            mask = np.ones(self.action_dim, dtype=np.bool)
+            mask = np.ones(self.model.action_dim, dtype=np.bool)
 
-        if np.random.rand() < self.epsilon.get() and not deterministic:
+        if np.random.rand() < self.parameters['epsilon'].get() and not deterministic:
             prob = np.array(mask, dtype=np.float)
             prob /= np.sum(prob)
-            random_action = np.random.choice(self.action_dim, 1, p=prob).item()
+            random_action = np.random.choice(self.model.action_dim, 1, p=prob).item()
             return random_action
         else:
             with th.no_grad():
@@ -113,14 +106,4 @@ class DistributionalDQNAgent(DQNAgent):
                 q_values = q_values.squeeze(0)
                 q_values[mask] = -th.inf
                 return q_values.argmax().item()
-
-    def loadParameters(self):
-        if not self.logger.load():
-            return
-
-        super().loadParameters()
-        self.n_atoms = self.logger.data['parameters']['n_atoms']['data'][-1]
-        self.min_value = self.logger.data['parameters']['min_value']['data'][-1]
-        self.max_value = self.logger.data['parameters']['max_value']['data'][-1]
         
-        self.model = self.create_model(self.model.learning_rate, self.architecture, self.model.device)

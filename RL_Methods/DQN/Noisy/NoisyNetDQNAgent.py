@@ -22,17 +22,19 @@ class NoisyNetDQNAgent(DQNAgent):
                     logger: Logger = None,
                     log_freq: int = 1,
                     save_log_every=100,
-                    device='cpu'
+                    device='cpu',
+                    epsilon=None
                 ):
-                
-        self.sigma_init = sigma_init
+        if epsilon is None:
+            epsilon=LinearSchedule(0.1, -1e-4, 0.0)
+
         # Using Noisy network, so we dont need e-greedy search
         # but, for cartpole, initial small epsilon helps convergence
         super().__init__(
                         input_dim=input_dim, 
                         action_dim=action_dim, 
                         learning_rate=learning_rate,
-                        epsilon=LinearSchedule(0.1, -1e-4, 0.0),
+                        epsilon=epsilon,
                         gamma=gamma, 
                         batch_size=batch_size, 
                         experience_buffer_size=experience_buffer_size, 
@@ -46,16 +48,5 @@ class NoisyNetDQNAgent(DQNAgent):
                         device=device
                         )
 
-        if not self.logger is None:
-            self.logger.log("parameters/sigma_init", self.sigma_init)
-
-    def create_model(self, learning_rate, architecture, device) -> NoisyModel:
-        return NoisyModel(self.input_dim, self.action_dim, learning_rate, self.sigma_init, architecture, device)
-
-    def loadParameters(self):
-        if not self.logger.load():
-            return
-
-        super().loadParameters()
-        self.sigma_init = self.logger.data['parameters']['sigma_init']['data'][-1]
-        
+        self.parameters['sigma_init'] = sigma_init
+        self.model = NoisyModel(input_dim, action_dim, learning_rate, sigma_init, architecture, device)

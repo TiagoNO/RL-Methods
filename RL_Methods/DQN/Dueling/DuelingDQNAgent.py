@@ -1,7 +1,7 @@
-from RL_Methods.DQN.DQNAgent import DQNAgent
-from RL_Methods.DQN.Dueling.DuelingModel import DuelingModel
-from RL_Methods.utils.Callback import Callback
 from RL_Methods.utils.Logger import Logger
+from RL_Methods.DQN.DQNAgent import DQNAgent
+from RL_Methods.utils.Callback import Callback
+from RL_Methods.DQN.Dueling.DuelingModel import DuelingModel
 
 class DuelingDQNAgent(DQNAgent):
 
@@ -33,7 +33,7 @@ class DuelingDQNAgent(DQNAgent):
                         experience_buffer_size=experience_buffer_size, 
                         target_network_sync_freq=target_network_sync_freq, 
                         grad_norm_clip=grad_norm_clip,
-                        architecture=architecture,
+                        architecture=None,
                         callbacks=callbacks,
                         logger=logger,
                         log_freq=log_freq,
@@ -41,6 +41,6 @@ class DuelingDQNAgent(DQNAgent):
                         device=device
                         )
 
-    def create_model(self, learning_rate, architecture, device):
-        return DuelingModel(self.input_dim, self.action_dim, learning_rate, architecture, device)
-        
+        self.model = DuelingModel(input_dim, action_dim, learning_rate, architecture, device)
+        self.parameters['architecture'] = architecture
+

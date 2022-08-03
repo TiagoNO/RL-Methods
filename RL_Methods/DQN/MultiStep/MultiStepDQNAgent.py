@@ -44,11 +44,9 @@ class MultiStepDQNAgent(DQNAgent):
                         save_log_every=save_log_every,
                         device=device
                         )
-        self.trajectory_steps = trajectory_steps
-        self.trajectory = []
 
-        if not self.logger is None:
-            self.logger.log("parameters/trajectory_steps", self.trajectory_steps)
+        self.trajectory = []
+        self.parameters['trajectory_steps'] = trajectory_steps
 
     def beginEpisode(self, state):
         for _ in range(len(self.trajectory)):
@@ -67,12 +65,12 @@ class MultiStepDQNAgent(DQNAgent):
         next_state = self.trajectory[-1][4]
 
         for i in reversed(self.trajectory):
-            reward = (reward * self.gamma) + i[2]
+            reward = (reward * self.parameters['gamma']) + i[2]
         
         return state, action, reward, done, next_state
 
     def calculate_loss(self):
-        samples = self.exp_buffer.sample(self.batch_size)
+        samples = self.exp_buffer.sample(self.parameters['batch_size'])
 
         # calculating q-values for states
         states_action_values = self.model.q_values(samples.states).gather(1, samples.actions.unsqueeze(-1)).squeeze(-1)
@@ -84,33 +82,21 @@ class MultiStepDQNAgent(DQNAgent):
             next_states_values = self.model.q_target(samples.next_states).max(1)[0]
 
             # Calculating the target values (Q(s_next, a) = 0 if state is terminal)
-            expected_state_action_values = samples.rewards + ((~samples.dones) * (self.gamma**self.trajectory_steps) * next_states_values)
+            gamma = self.parameters['gamma']**self.parameters['trajectory_steps']
+            expected_state_action_values = samples.rewards + ((~samples.dones) * gamma * next_states_values)
 
         return self.model.loss_func(states_action_values, expected_state_action_values).mean()
 
     def update(self, state, action, reward, done, next_state, info):
-        if len(self.trajectory) >= self.trajectory_steps:
+        if len(self.trajectory) >= self.parameters['trajectory_steps']:
             t_state, t_action, t_reward, t_done, t_next_state = self.getTrajectory()
             self.exp_buffer.add(t_state, t_action, t_reward, t_done, t_next_state)
             self.step()
             self.trajectory.pop(0)
 
-        self.epsilon.update()
+        self.parameters['epsilon'].update()
         self.model.update_learning_rate()
         self.trajectory.append([state, action, reward, done, next_state])
 
-        if not self.logger is None and self.num_timesteps % self.log_freq == 0:
-            self.logger.log("parameters/learning_rate", self.model.learning_rate.get())
-            self.logger.log("parameters/epsilon", self.epsilon.get())
-
-        if self.num_timesteps % self.target_network_sync_freq == 0:
+        if self.num_timesteps % self.parameters['target_network_sync_freq'] == 0:
             self.model.sync()
-
-
-    def loadParameters(self):
-        if not self.logger.load():
-            return
-
-        super().loadParameters()
-        
-        self.trajectory_steps = self.logger.data['parameters']['trajectory_steps']['data'][-1]

@@ -45,47 +45,25 @@ class PrioritizedDQNAgent(DQNAgent):
                         save_log_every=save_log_every,
                         device=device
                         )
+        self.parameters['experience_beta'] = experience_beta
+        self.parameters['experience_prob_alpha'] = experience_prob_alpha
         self.exp_buffer = PrioritizedReplayBuffer(experience_buffer_size, input_dim, device, experience_prob_alpha)
-        self.beta = experience_beta
-
-        if not self.logger is None:
-            self.logger.log("parameters/experience_beta_initial", self.beta.initial_value)
-            self.logger.log("parameters/experience_beta_final", self.beta.final_value)
-            self.logger.log("parameters/experience_beta_delta", self.beta.delta)
 
     def calculate_loss(self):
-        samples = self.exp_buffer.sample(self.batch_size, self.beta.get())
+        samples = self.exp_buffer.sample(self.parameters['batch_size'], self.parameters['experience_beta'].get())
 
         states_action_values = self.model.q_values(samples.states).gather(1, samples.actions.unsqueeze(-1)).squeeze(-1)
         with th.no_grad():
             next_states_values = self.model.q_target(samples.next_states).max(1)[0]
-            expected_state_action_values = samples.rewards + ((~samples.dones) * self.gamma * next_states_values)
+            expected_state_action_values = samples.rewards + ((~samples.dones) * self.parameters['gamma'] * next_states_values)
 
         loss = self.model.loss_func(states_action_values, expected_state_action_values)
         loss *= samples.weights
         self.exp_buffer.update_priorities(samples.indices, loss.detach().cpu().numpy())
-        self.beta.update()
-        self.logger.log("parameters/experience_beta", self.beta.get())
+        self.parameters['experience_beta'].update()
         return loss.mean()
 
-
-    def print(self):
-        super().print()
-        print("| Beta: {}\t|".format(self.beta.get()).expandtabs(45))
-        print("|" + "=" * 44 + "|")
-
-    def endEpisode(self):
-        super().endEpisode()
-
-    def loadParameters(self):
-        if not self.logger.load():
-            return
-
-        super().loadParameters()
-        
-        self.experience_prob_alpha = self.logger.data['parameters']['experience_prob_alpha']['data'][-1]
-
-        self.beta.cur_value = self.logger.data['parameters']['experience_beta']['data'][-1]
-        self.beta.final_value = self.logger.data['parameters']['experience_beta_final']['data'][-1]
-        self.beta.delta = self.logger.data['parameters']['experience_beta_delta']['data'][-1]
-        # self.exp_buffer = PrioritizedReplayBuffer(self.experience_buffer_sz, self.input_dim, self.model.device, self.experience_prob_alpha)
+    # def print(self):
+    #     super().print()
+    #     print("| Beta: {}\t|".format(self.beta.get()).expandtabs(45))
+    #     print("|" + "=" * 44 + "|")
