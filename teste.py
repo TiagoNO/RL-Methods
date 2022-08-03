@@ -34,7 +34,7 @@ if __name__ == '__main__':
     th.set_num_threads(10)
     th.set_num_interop_threads(10)
 
-    num_timesteps = 300
+    num_timesteps = 100000
     plot_every = 100
     debug_every = 100
     env_name = "CartPole-v0"
@@ -50,7 +50,7 @@ if __name__ == '__main__':
     learning_rate_delta = -(initial_learning_rate/num_timesteps)
 
     gamma = .9
-    batch_size = 64
+    batch_size = 128
     experience_buffer_size = 1e6
     target_network_sync_freq = 2000
     grad_norm_clip=10
@@ -65,7 +65,7 @@ if __name__ == '__main__':
     trajectory_steps = 4
 
     # Noisy parameters
-    initial_sigma = .9
+    initial_sigma = 0.8
 
     # Distributional parameters
     n_atoms = 2
@@ -190,6 +190,8 @@ if __name__ == '__main__':
                         )
     multistepDQNAgent.train(env, num_timesteps)
     generate_graph(multistepDQNAgent.logger.directory + "scores", multistepDQNAgent.scores)
+    del env
+    del multistepDQNAgent
 
     env = gym.make(env_name)
     noisyDQNAgent = NoisyNetDQNAgent(
@@ -233,7 +235,7 @@ if __name__ == '__main__':
                         log_freq=10,
                         device=device
                         )
-    distributionalDQNAgent.train(env, num_timesteps)
+    # distributionalDQNAgent.train(env, num_timesteps)
     generate_graph(distributionalDQNAgent.logger.directory + "scores", distributionalDQNAgent.scores)
     del env
     del distributionalDQNAgent
