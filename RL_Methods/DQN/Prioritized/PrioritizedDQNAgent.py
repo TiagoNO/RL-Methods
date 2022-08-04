@@ -1,4 +1,3 @@
-from tabnanny import check
 from RL_Methods.DQN.DQNAgent import DQNAgent
 from RL_Methods.Buffers.PrioritizedReplayBuffer import PrioritizedReplayBuffer
 import torch as th

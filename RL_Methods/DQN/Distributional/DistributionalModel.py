@@ -1,7 +1,6 @@
+import torchinfo
 import torch as th
 import torch.nn as nn
-import torch.optim as optim
-import torchinfo
 from RL_Methods.DQN.Model import Model
 
 class DistributionalModel(Model):

@@ -1,8 +1,7 @@
-from RL_Methods.DQN.DQNAgent import DQNAgent
 import torch as th
 
+from RL_Methods.DQN.DQNAgent import DQNAgent
 from RL_Methods.utils.Callback import Callback
-from RL_Methods.utils.Schedule import Schedule
 from RL_Methods.utils.Logger import Logger
 
 
