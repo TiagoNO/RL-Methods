@@ -66,3 +66,7 @@ class PrioritizedDQNAgent(DQNAgent):
     #     super().print()
     #     print("| Beta: {}\t|".format(self.beta.get()).expandtabs(45))
     #     print("|" + "=" * 44 + "|")
+
+    def endEpisode(self):
+        self.logger.log("parameters/beta", self.parameters['experience_beta'].get())
+        super().endEpisode()

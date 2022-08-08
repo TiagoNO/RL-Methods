@@ -87,6 +87,7 @@ class MultiStepDQNAgent(DQNAgent):
         return self.model.loss_func(states_action_values, expected_state_action_values).mean()
 
     def update(self, state, action, reward, done, next_state, info):
+        super().update(state, action, reward, done, next_state, info)
         if len(self.trajectory) >= self.parameters['trajectory_steps']:
             t_state, t_action, t_reward, t_done, t_next_state = self.getTrajectory()
             self.exp_buffer.add(t_state, t_action, t_reward, t_done, t_next_state)

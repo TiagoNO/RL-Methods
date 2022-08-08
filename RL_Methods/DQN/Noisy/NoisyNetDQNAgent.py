@@ -1,5 +1,7 @@
 from RL_Methods.DQN.DQNAgent import DQNAgent
 from RL_Methods.DQN.Noisy.NoisyModel import NoisyModel
+from RL_Methods.DQN.Noisy.NoisyLinear import NoisyLinear, NoisyFactorizedLinear
+
 from RL_Methods.utils.Schedule import LinearSchedule
 
 from RL_Methods.utils.Callback import Callback
@@ -50,3 +52,9 @@ class NoisyNetDQNAgent(DQNAgent):
 
         self.parameters['sigma_init'] = sigma_init
         self.model = NoisyModel(input_dim, action_dim, learning_rate, sigma_init, architecture, device)
+
+    def endEpisode(self):
+        for idx, p in enumerate(self.model.q_net.modules()): 
+            if type(p) == NoisyLinear or type(p) == NoisyFactorizedLinear:
+                self.logger.log("parameters/layer_{}_avg_noisy".format(idx), p.sigma_weight.mean().item())
+        super().endEpisode()

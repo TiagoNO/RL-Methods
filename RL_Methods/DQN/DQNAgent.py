@@ -23,7 +23,7 @@ class DQNAgent(Agent):
                     batch_size : int, 
                     experience_buffer_size : int,
                     target_network_sync_freq : int, 
-                    grad_norm_clip:float =1,
+                    grad_norm_clip:float = 1,
                     architecture=None,
                     callbacks: Callback = None,
                     logger: Logger = None,
@@ -99,6 +99,7 @@ class DQNAgent(Agent):
 
 
     def update(self, state, action, reward, done, next_state, info) -> None:
+        super().update(state, action, reward, done, next_state, info)
         self.exp_buffer.add(state, action, reward, done, next_state)
         self.step()
         self.parameters['epsilon'].update()
@@ -106,12 +107,6 @@ class DQNAgent(Agent):
 
         if self.num_timesteps % self.parameters['target_network_sync_freq'] == 0:
             self.model.sync()
-
-    def print(self) -> None:
-        super().print()
-        print("|Learning rate: {}\t|".format(self.parameters['learning_rate'].get()).expandtabs(45))
-        print("|Epsilon: {}\t|".format(self.parameters['epsilon'].get()).expandtabs(45))
-        print("|" + "=" * 44 + "|")
 
     def save(self, directory, prefix="dqn", save_exp_buffer=True) -> None:
         if not os.path.isdir(directory):
@@ -128,7 +123,6 @@ class DQNAgent(Agent):
 
         zip_files(directory, directory)
         for files in os.listdir(directory):
-            # print(os.path.join(directory, files))
             os.remove(os.path.join(directory, files))
         os.removedirs(directory)
 
@@ -146,7 +140,6 @@ class DQNAgent(Agent):
         buffer_file = "{}/{}_buffer".format(directory, prefix)
 
         parameters = pickle.load(open(parameters_file, "rb"))
-        # print(parameters)
         agent = cls(
             **parameters,
             logger=logger,
@@ -160,7 +153,20 @@ class DQNAgent(Agent):
             print("Could not load exp buffer...")
 
         for files in os.listdir(directory):
-            # print(os.path.join(directory, files))
             os.remove(os.path.join(directory, files))
         os.removedirs(directory)
         return agent
+
+    def train(self, env : gym.Env, total_timesteps : int):
+        self.model.train()
+        super().train(env, total_timesteps)
+
+    def test(self, env, n_episodes):
+        self.model.eval()
+        super().test(env, n_episodes)
+
+
+    def endEpisode(self):
+        self.logger.log("parameters/learning_rate", self.parameters['learning_rate'].get())
+        self.logger.log("parameters/epsilon", self.parameters['epsilon'].get())
+        super().endEpisode()
