@@ -123,12 +123,12 @@ class Agent:
                 score += reward
                 env.render()   
             self.test_scores[self.num_test_episodes] = score
-            # print("|" + "=" * 44 + "|")
-            # print("|{}\t|".format(self.__class__.__name__).expandtabs(45))
-            # print("|Episode {}/{}\t|".format(self.num_test_episodes+1, self.total_test_episodes).expandtabs(45))
-            # print("|Episode Score {}\t|".format(score).expandtabs(45))
-            # print("|Avg score {}\t|".format(round(np.mean(self.test_scores[0:self.num_test_episodes+1]), 2)).expandtabs(45))
-            # print("|" + "=" * 44 + "|")
+            print("|" + "=" * 44 + "|")
+            print("|{}\t|".format(self.__class__.__name__).expandtabs(45))
+            print("|Episode {}/{}\t|".format(self.num_test_episodes+1, self.total_test_episodes).expandtabs(45))
+            print("|Episode Score {}\t|".format(score).expandtabs(45))
+            print("|Avg score {}\t|".format(round(np.mean(self.test_scores[0:self.num_test_episodes+1]), 2)).expandtabs(45))
+            print("|" + "=" * 44 + "|")
 
     def save(self, filename):
         pass
