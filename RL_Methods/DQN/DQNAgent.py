@@ -63,17 +63,11 @@ class DQNAgent(Agent):
             mask = np.ones(self.model.action_dim, dtype=np.bool)
 
         if np.random.rand() < self.parameters['epsilon'].get() and not deterministic:
-            prob = np.array(mask, dtype=np.float)
-            prob /= np.sum(prob)
-            random_action = np.random.choice(self.model.action_dim, 1, p=prob).item()
-            return random_action
-        else:
-            with th.no_grad():
-                mask = np.invert(mask)
-                state = th.tensor(state, dtype=th.float).to(self.model.device)
-                q_values = self.model.q_values(state)
-                q_values[mask] = -th.inf
-                return q_values.argmax().item()
+            prob = np.array(mask, dtype=np.float) / np.sum(mask)
+            return np.random.choice(self.model.action_dim, 1, p=prob).item()
+        else:            
+            state = th.tensor(state, dtype=th.float).to(self.model.device)
+            return self.model.predict(state, deterministic, mask=np.invert(mask))
 
     def calculate_loss(self) -> th.Tensor:
         samples = self.exp_buffer.sample(self.parameters['batch_size'])

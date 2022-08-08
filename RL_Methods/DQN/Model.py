@@ -1,7 +1,7 @@
+import torchinfo
 import torch as th
 import torch.nn as nn
 import torch.optim as optim
-import torchinfo
 
 from RL_Methods.utils.Schedule import Schedule
 
@@ -67,3 +67,9 @@ class Model(nn.Module):
     def load(self, file):
         self.q_net.load_state_dict(th.load(file, map_location=th.device(self.device)))
         self.sync()
+
+    def predict(self, state, deterministic=False, mask=None):
+        q_val = self.q_values(state)
+        if not mask is None:
+            q_val[mask] = -th.inf
+        return q_val.argmax().item()

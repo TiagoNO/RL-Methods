@@ -86,24 +86,3 @@ class DistributionalDQNAgent(DQNAgent):
             projection[ne_mask, l[ne_mask]] += distrib[ne_mask, j] * (u - b_j)[ne_mask]
             projection[ne_mask, u[ne_mask]] += distrib[ne_mask, j] * (b_j - l)[ne_mask]
         return projection
-
-    @th.no_grad()
-    def getAction(self, state, mask=None, deterministic=False):
-        self.model.train(True)
-        if mask is None:
-            mask = np.ones(self.model.action_dim, dtype=np.bool)
-
-        if np.random.rand() < self.parameters['epsilon'].get() and not deterministic:
-            prob = np.array(mask, dtype=np.float)
-            prob /= np.sum(prob)
-            random_action = np.random.choice(self.model.action_dim, 1, p=prob).item()
-            return random_action
-        else:
-            with th.no_grad():
-                mask = np.invert(mask)
-                state = th.tensor(state, dtype=th.float).to(self.model.device).unsqueeze(0)
-                q_values, _ = self.model.q_values(state)
-                q_values = q_values.squeeze(0)
-                q_values[mask] = -th.inf
-                return q_values.argmax().item()
-        

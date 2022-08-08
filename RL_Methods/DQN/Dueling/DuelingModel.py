@@ -112,3 +112,10 @@ class DuelingModel(nn.Module):
         self.advantage_net.load_state_dict(th.load(file + "_advantage_net.pt", map_location=th.device(self.device)))
         self.value_net.load_state_dict(th.load(file + "_value_net.pt", map_location=th.device(self.device)))
         self.sync()
+
+    def predict(self, state, deterministic=False, mask=None):
+        with th.no_grad():
+            q_values = self.q_values(state)
+            if not mask is None:
+                q_values[mask] = -th.inf
+            return q_values.argmax().item()

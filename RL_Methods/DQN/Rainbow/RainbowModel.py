@@ -81,3 +81,11 @@ class RainbowModel(DuelingModel):
         probs = self.softmax(advantage_atoms)
         q_values = th.mul(probs, self.support_vector).sum(dim=2)
         return q_values, advantage_atoms
+
+    def predict(self, state, deterministic=False, mask=None):
+        with th.no_grad():
+            q_val, _ = self.q_values(state.unsqueeze(0))
+            q_val = q_val.squeeze(0)
+            if not mask is None:
+                q_val[mask] = -th.inf
+            return q_val.argmax().item()

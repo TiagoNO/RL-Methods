@@ -1,5 +1,6 @@
 import torch as th
 import numpy as np
+import time
 
 from RL_Methods.DQN.DQNAgent import DQNAgent
 from RL_Methods.DQN.Rainbow.RainbowModel import RainbowModel
@@ -75,27 +76,53 @@ class RainbowAgent(DQNAgent):
         self.parameters['trajectory_steps'] = trajectory_steps
         self.parameters['architecture'] = architecture
 
-    def calculate_loss(self):
-        samples = self.exp_buffer.sample(self.parameters['batch_size'], self.parameters['experience_beta'].get())
+        # performance test
+        self.sample_time = 0
+        self.log_prob_time = 0
+        self.next_distrib_time = 0
+        self.projection_time = 0
+        self.prios_time = 0
+        self.count = 1
 
+        self.action_time = 0
+        self.action_count = 1
+
+        self.trajectory_time = 0
+        self.trajectory_count = 1
+
+
+    def calculate_loss(self):
+        begin = time.time()
+        samples = self.exp_buffer.sample(self.parameters['batch_size'], self.parameters['experience_beta'].get())
+        self.sample_time += time.time() - begin
+
+        begin = time.time()
         _, q_values_atoms = self.model.q_values(samples.states)
         state_action_values = q_values_atoms[range(samples.size), samples.actions]
         state_log_prob = th.log_softmax(state_action_values, dim=1)
+        self.log_prob_time += time.time() - begin
 
+        begin = time.time()
         with th.no_grad():
             q_values, _ = self.model.q_values(samples.next_states)
             next_actions = th.argmax(q_values, dim=1)
             _, next_q_atoms = self.model.q_target(samples.next_states)
             next_distrib = th.softmax(next_q_atoms, dim=2)
             next_best_distrib = next_distrib[range(samples.size), next_actions]
+            self.next_distrib_time += time.time() - begin
 
+            begin = time.time()
             projection = self.project_operator(next_best_distrib, samples.rewards, samples.dones)
+            self.projection_time += time.time() - begin
 
         loss_v = (-state_log_prob * projection).sum(dim=1)
 
         loss_v *= samples.weights
+        begin = time.time()
         self.exp_buffer.update_priorities(samples.indices, loss_v.detach().cpu().numpy())
         self.parameters['experience_beta'].update()
+        self.prios_time += time.time() - begin
+        self.count += 1
         return loss_v.mean()
 
     def project_operator(self, distrib, rewards, dones):
@@ -138,10 +165,13 @@ class RainbowAgent(DQNAgent):
 
     def update(self, state, action, reward, done, next_state, info):
         super().update(state, action, reward, done, next_state, info)
+        begin = time.time()
         if len(self.trajectory) >= self.parameters['trajectory_steps']:
             t_state, t_action, t_reward, t_done, t_next_state = self.getTrajectory()
 
             self.exp_buffer.add(t_state, t_action, t_reward, t_done, t_next_state)
+            self.trajectory_time += time.time() - begin
+            self.trajectory_count += 1
             self.step()
             self.trajectory.pop(0)
 
@@ -151,26 +181,6 @@ class RainbowAgent(DQNAgent):
 
         if self.num_timesteps % self.parameters['target_network_sync_freq'] == 0:
             self.model.sync()
-
-    @th.no_grad()
-    def getAction(self, state, mask=None, deterministic=False):
-        self.model.train(True)
-        if mask is None:
-            mask = np.ones(self.model.action_dim, dtype=np.bool)
-
-        if np.random.rand() < self.parameters['epsilon'].get() and not deterministic:
-            prob = np.array(mask, dtype=np.float)
-            prob /= np.sum(prob)
-            random_action = np.random.choice(self.model.action_dim, 1, p=prob).item()
-            return random_action
-        else:
-            with th.no_grad():
-                mask = np.invert(mask)
-                state = th.tensor(state, dtype=th.float).to(self.model.device).unsqueeze(0)
-                q_values, _ = self.model.q_values(state)
-                q_values = q_values.squeeze(0)
-                q_values[mask] = -th.inf
-                return q_values.argmax().item()
 
     def endEpisode(self):
         self.logger.log("parameters/beta", self.parameters['experience_beta'].get())
@@ -187,3 +197,23 @@ class RainbowAgent(DQNAgent):
                 self.logger.log("parameters/value_L{}_avg_noisy".format(idx), p.sigma_weight.mean().item())
         super().endEpisode()
         
+        self.logger.log("time/sample_time", self.sample_time / self.count)
+        self.logger.log("time/log_prob_time", self.log_prob_time / self.count)
+        self.logger.log("time/next_distrib_time", self.next_distrib_time / self.count)
+        self.logger.log("time/projection_time", self.projection_time / self.count)
+        self.logger.log("time/prios_time", self.prios_time / self.count)
+        self.logger.log("time/action_time", self.action_time / self.action_count)
+        self.logger.log("time/trajectory_time", self.trajectory_time / self.trajectory_count)
+
+        self.sample_time = 0
+        self.log_prob_time = 0
+        self.next_distrib_time = 0
+        self.projection_time = 0
+        self.prios_time = 0
+        self.count = 1
+
+        self.action_time = 0
+        self.action_count = 1
+
+        self.trajectory_time = 0
+        self.trajectory_count = 1
