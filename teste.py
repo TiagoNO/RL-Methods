@@ -31,8 +31,8 @@ def generate_graph(filename, scores):
     plt.close()
 
 if __name__ == '__main__':
-    th.set_num_threads(10)
-    th.set_num_interop_threads(10)
+    th.set_num_threads(5)
+    th.set_num_interop_threads(5)
 
     num_timesteps = 100000
     plot_every = 100
@@ -97,7 +97,7 @@ if __name__ == '__main__':
                         device=device
                         )
     dqnAgent.train(env, num_timesteps)
-    generate_graph(dqnAgent.logger.directory + "scores", dqnAgent.scores)
+    generate_graph(dqnAgent.logger.directory + "scores", dqnAgent.data['scores'])
     del env
     del dqnAgent
 
@@ -119,7 +119,7 @@ if __name__ == '__main__':
                         device=device
                         )
     doubledqnAgent.train(env, num_timesteps)
-    generate_graph(doubledqnAgent.logger.directory + "scores", doubledqnAgent.scores)
+    generate_graph(doubledqnAgent.logger.directory + "scores", doubledqnAgent.data['scores'])
     del env
     del doubledqnAgent
 
@@ -144,7 +144,7 @@ if __name__ == '__main__':
                         device=device
                         )
     prioritizedDQNAgent.train(env, num_timesteps)
-    generate_graph(prioritizedDQNAgent.logger.directory + "scores", prioritizedDQNAgent.scores)
+    generate_graph(prioritizedDQNAgent.logger.directory + "scores", prioritizedDQNAgent.data['scores'])
     del env
     del prioritizedDQNAgent
     
@@ -166,7 +166,7 @@ if __name__ == '__main__':
                         device=device
                         )
     duelingDQNAgent.train(env, num_timesteps)
-    generate_graph(duelingDQNAgent.logger.directory + "scores", duelingDQNAgent.scores)
+    generate_graph(duelingDQNAgent.logger.directory + "scores", duelingDQNAgent.data['scores'])
     del env
     del duelingDQNAgent
 
@@ -189,7 +189,7 @@ if __name__ == '__main__':
                         device=device
                         )
     multistepDQNAgent.train(env, num_timesteps)
-    generate_graph(multistepDQNAgent.logger.directory + "scores", multistepDQNAgent.scores)
+    generate_graph(multistepDQNAgent.logger.directory + "scores", multistepDQNAgent.data['scores'])
     del env
     del multistepDQNAgent
 
@@ -211,7 +211,7 @@ if __name__ == '__main__':
                         device=device
                         )
     noisyDQNAgent.train(env, num_timesteps)
-    generate_graph(noisyDQNAgent.logger.directory + "scores", noisyDQNAgent.scores)
+    generate_graph(noisyDQNAgent.logger.directory + "scores", noisyDQNAgent.data['scores'])
     del env
     del noisyDQNAgent
 
@@ -235,8 +235,8 @@ if __name__ == '__main__':
                         log_freq=10,
                         device=device
                         )
-    # distributionalDQNAgent.train(env, num_timesteps)
-    generate_graph(distributionalDQNAgent.logger.directory + "scores", distributionalDQNAgent.scores)
+    distributionalDQNAgent.train(env, num_timesteps)
+    generate_graph(distributionalDQNAgent.logger.directory + "scores", distributionalDQNAgent.data['scores'])
     del env
     del distributionalDQNAgent
 
@@ -264,7 +264,7 @@ if __name__ == '__main__':
                         device=device
                         )
     rainbowAgent.train(env, num_timesteps)
-    generate_graph(rainbowAgent.logger.directory + "scores", rainbowAgent.scores)
+    generate_graph(rainbowAgent.logger.directory + "scores", rainbowAgent.data['scores'])
     del env
     del rainbowAgent
     
