@@ -9,6 +9,11 @@ DQN:
     [v] Rainbow
     [x] Boltzmann Softmax DQN
 
+
 QLearning:
     [v] QLearning vanilla
     [v] Double QLearning
+
+[x] TRPO
+[x] PPO
+[x] Multi Environment
