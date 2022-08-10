@@ -67,8 +67,8 @@ class CheckpointCallback (Callback):
             os.makedirs(self.savedir)
 
     def update(self):
-        if self.agent.num_timesteps % self.checkpoint_freq == 0 and self.agent.num_timesteps > 0:
-            self.agent.save(self.savedir + self.prefix + "_{}_steps".format(self.agent.num_timesteps), prefix=self.prefix)
+        if self.agent.parameters['num_timesteps'] % self.checkpoint_freq == 0 and self.agent.parameters['num_timesteps'] > 0:
+            self.agent.save(self.savedir + self.prefix + "_{}_steps".format(self.agent.parameters['num_timesteps']), prefix=self.prefix)
 
     def endTrainning(self):
         self.agent.save(self.savedir + self.prefix + "_last", prefix=self.prefix)

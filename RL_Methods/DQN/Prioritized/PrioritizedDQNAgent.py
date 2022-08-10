@@ -25,7 +25,8 @@ class PrioritizedDQNAgent(DQNAgent):
                     logger: Logger = None,
                     log_freq: int = 1,
                     save_log_every=100,
-                    device='cpu'
+                    device='cpu',
+                    debug=False
                     ):
         super().__init__(
                         input_dim=input_dim, 
@@ -42,7 +43,8 @@ class PrioritizedDQNAgent(DQNAgent):
                         logger=logger,
                         log_freq=log_freq,
                         save_log_every=save_log_every,
-                        device=device
+                        device=device,
+                        debug=debug
                         )
         self.parameters['experience_beta'] = experience_beta
         self.parameters['experience_prob_alpha'] = experience_prob_alpha

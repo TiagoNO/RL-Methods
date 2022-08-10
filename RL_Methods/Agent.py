@@ -9,13 +9,16 @@ from RL_Methods.utils.Schedule import Schedule
 
 class Agent:
 
-    def __init__(self, callbacks : Callback = None, logger : Logger = None, log_freq=1, save_log_every=100) -> None:
+    def __init__(self, callbacks : Callback = None, logger : Logger = None, log_freq=1, save_log_every=100, debug=False) -> None:
         self.logger = logger
         self.callbacks = callbacks
         
         self.parameters = {}
         self.parameters['log_freq'] = log_freq
         self.parameters['save_log_every'] = save_log_every
+        self.parameters['debug'] = debug
+        self.parameters['num_timesteps'] = 0
+        self.parameters['num_episodes'] = 1
         self.data = {
             # curr data
             'state':None,
@@ -39,10 +42,10 @@ class Agent:
     def endEpisode(self):
         if not self.logger is None:
             self.logger.log("train/avg_ep_rewards", np.mean(self.data['scores'][-100:]))
-            self.logger.log("train/timesteps", self.num_timesteps)
-            self.logger.log("train/episodes", self.num_episodes)
+            self.logger.log("train/timesteps", self.parameters['num_timesteps'])
+            self.logger.log("train/episodes", self.parameters['num_episodes'])
             self.logger.print()
-            if self.num_episodes % self.parameters['save_log_every'] == 0:
+            if self.parameters['num_episodes'] % self.parameters['save_log_every'] == 0:
                 self.logger.dump()
 
     def update(self, state, action, reward, done, next_state, info):
@@ -56,17 +59,15 @@ class Agent:
     def getAction(self, state, deterministic=True, mask=None):
         pass
 
-    def train(self, env : gym.Env, total_timesteps : int):
+    def train(self, env : gym.Env, total_timesteps : int, reset=False):
         self.total_timesteps = int(total_timesteps)
         self.data['scores'].clear()
-        self.num_timesteps = 0
-        self.num_episodes = 0
 
         self.beginTrainning()
         if not self.callbacks is None:
             self.callbacks.beginTrainning()
         
-        while self.num_timesteps < total_timesteps:
+        while self.parameters['num_timesteps'] < total_timesteps:
             obs = env.reset()
             done = False
             action_mask = None
@@ -88,13 +89,12 @@ class Agent:
 
                 score += reward
                 obs = obs_     
-                self.num_timesteps += 1
+                self.parameters['num_timesteps'] += 1
 
-                
             self.data['scores'].append(score)
             if not self.callbacks is None:
                 self.callbacks.endEpisode()
-            self.num_episodes+=1
+            self.parameters['num_episodes'] += 1
 
             self.endEpisode()
 

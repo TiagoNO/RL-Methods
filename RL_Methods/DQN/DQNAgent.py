@@ -29,14 +29,16 @@ class DQNAgent(Agent):
                     logger: Logger = None,
                     log_freq: int = 1,
                     save_log_every=100,
-                    device='cpu'
+                    device='cpu',
+                    debug=False
                 ):        
 
         super(DQNAgent, self).__init__(
             callbacks=callbacks, 
             logger=logger, 
             log_freq=log_freq, 
-            save_log_every=save_log_every
+            save_log_every=save_log_every,
+            debug=debug
             )
 
         self.parameters['input_dim'] = input_dim
@@ -84,8 +86,8 @@ class DQNAgent(Agent):
             return
 
         self.model.train(True)
-        loss = self.calculate_loss()
         self.model.optimizer.zero_grad()        
+        loss = self.calculate_loss()
 
         loss.backward()
         th.nn.utils.clip_grad_norm_(self.model.parameters(), self.parameters['grad_norm_clip'])
@@ -99,7 +101,7 @@ class DQNAgent(Agent):
         self.parameters['epsilon'].update()
         self.model.update_learning_rate()
 
-        if self.num_timesteps % self.parameters['target_network_sync_freq'] == 0:
+        if self.parameters['num_timesteps'] % self.parameters['target_network_sync_freq'] == 0:
             self.model.sync()
 
     def save(self, directory, prefix="dqn", save_exp_buffer=True) -> None:
@@ -133,13 +135,18 @@ class DQNAgent(Agent):
         parameters_file = "{}/{}_parameters".format(directory, prefix)
         buffer_file = "{}/{}_buffer".format(directory, prefix)
 
-        parameters = pickle.load(open(parameters_file, "rb"))
+        parameters = dict(pickle.load(open(parameters_file, "rb")))
+        num_episodes = parameters.pop('num_episodes')
+        num_timesteps = parameters.pop('num_timesteps')
         agent = cls(
             **parameters,
             logger=logger,
             callbacks=callback,
             device=device
         )
+        agent.parameters['num_timesteps'] = num_timesteps
+        agent.parameters['num_episodes'] = num_episodes
+
         agent.model.load(model_file)
         try:
             agent.exp_buffer = pickle.load(open(buffer_file, "rb"))
@@ -161,6 +168,7 @@ class DQNAgent(Agent):
 
 
     def endEpisode(self):
-        self.logger.log("parameters/learning_rate", self.parameters['learning_rate'].get())
-        self.logger.log("parameters/epsilon", self.parameters['epsilon'].get())
+        if not self.logger is None:
+            self.logger.log("parameters/learning_rate", self.parameters['learning_rate'].get())
+            self.logger.log("parameters/epsilon", self.parameters['epsilon'].get())
         super().endEpisode()

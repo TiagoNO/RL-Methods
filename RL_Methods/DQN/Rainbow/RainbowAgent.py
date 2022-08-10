@@ -35,7 +35,8 @@ class RainbowAgent(DQNAgent):
                     log_freq: int = 1,
                     save_log_every=100,
                     device='cpu',
-                    epsilon=None
+                    epsilon=None,
+                    debug=False
                     ):
 
         if epsilon is None:
@@ -58,7 +59,8 @@ class RainbowAgent(DQNAgent):
                         logger=logger,
                         log_freq=log_freq,
                         save_log_every=save_log_every,
-                        device=device
+                        device=device,
+                        debug=debug
                         )
 
         self.exp_buffer = PrioritizedReplayBuffer(experience_buffer_size, input_dim, device, experience_prob_alpha)
@@ -125,6 +127,32 @@ class RainbowAgent(DQNAgent):
         self.count += 1
         return loss_v.mean()
 
+
+    def step(self) -> None:
+        if len(self.exp_buffer) < self.parameters['batch_size']:
+            return
+
+        self.model.train(True)
+        self.model.optimizer.zero_grad()
+        loss = self.calculate_loss()
+        loss.backward()
+
+        # total_norm=0
+        # for p in self.model.parameters():
+        #     try:
+        #         param_norm = p.grad.detach().data.norm(2)
+        #         print(p.names, param_norm.item() ** 2)
+        #         total_norm += param_norm.item() ** 2
+        #     except:
+        #         continue
+        # total_norm = total_norm ** 0.5
+        # print(total_norm)
+        # input()
+
+        th.nn.utils.clip_grad_norm_(self.model.parameters(), self.parameters['grad_norm_clip'])
+        self.model.optimizer.step()
+
+
     def project_operator(self, distrib, rewards, dones):
         batch_size = len(rewards)
         projection = th.zeros((batch_size, self.model.n_atoms), dtype=th.float32).to(self.model.device)
@@ -179,31 +207,33 @@ class RainbowAgent(DQNAgent):
         self.model.update_learning_rate()
         self.trajectory.append([state, action, reward, done, next_state])
 
-        if self.num_timesteps % self.parameters['target_network_sync_freq'] == 0:
+        if self.parameters['num_timesteps'] % self.parameters['target_network_sync_freq'] == 0:
             self.model.sync()
 
     def endEpisode(self):
-        self.logger.log("parameters/beta", self.parameters['experience_beta'].get())
-        for idx, p in enumerate(self.model.features_extractor.modules()): 
-            if type(p) == NoisyLinear or type(p) == NoisyFactorizedLinear:
-                self.logger.log("parameters/feature_extractor_L{}_avg_noisy".format(idx), p.sigma_weight.mean().item())
+        if not self.logger is None:
+            self.logger.log("parameters/beta", self.parameters['experience_beta'].get())
+            for idx, p in enumerate(self.model.features_extractor.modules()): 
+                if type(p) == NoisyLinear or type(p) == NoisyFactorizedLinear:
+                    self.logger.log("parameters/feature_extractor_L{}_avg_noisy".format(idx), p.sigma_weight.mean().item())
 
-        for idx, p in enumerate(self.model.advantage_net.modules()): 
-            if type(p) == NoisyLinear or type(p) == NoisyFactorizedLinear:
-                self.logger.log("parameters/advantage_L{}_avg_noisy".format(idx), p.sigma_weight.mean().item())
+            for idx, p in enumerate(self.model.advantage_net.modules()): 
+                if type(p) == NoisyLinear or type(p) == NoisyFactorizedLinear:
+                    self.logger.log("parameters/advantage_L{}_avg_noisy".format(idx), p.sigma_weight.mean().item())
 
-        for idx, p in enumerate(self.model.value_net.modules()): 
-            if type(p) == NoisyLinear or type(p) == NoisyFactorizedLinear:
-                self.logger.log("parameters/value_L{}_avg_noisy".format(idx), p.sigma_weight.mean().item())
-        super().endEpisode()
+            for idx, p in enumerate(self.model.value_net.modules()): 
+                if type(p) == NoisyLinear or type(p) == NoisyFactorizedLinear:
+                    self.logger.log("parameters/value_L{}_avg_noisy".format(idx), p.sigma_weight.mean().item())
+            super().endEpisode()
         
-        self.logger.log("time/sample_time", self.sample_time / self.count)
-        self.logger.log("time/log_prob_time", self.log_prob_time / self.count)
-        self.logger.log("time/next_distrib_time", self.next_distrib_time / self.count)
-        self.logger.log("time/projection_time", self.projection_time / self.count)
-        self.logger.log("time/prios_time", self.prios_time / self.count)
-        self.logger.log("time/action_time", self.action_time / self.action_count)
-        self.logger.log("time/trajectory_time", self.trajectory_time / self.trajectory_count)
+            if self.parameters['debug']:
+                self.logger.log("time/sample_time", self.sample_time / self.count)
+                self.logger.log("time/log_prob_time", self.log_prob_time / self.count)
+                self.logger.log("time/next_distrib_time", self.next_distrib_time / self.count)
+                self.logger.log("time/projection_time", self.projection_time / self.count)
+                self.logger.log("time/prios_time", self.prios_time / self.count)
+                self.logger.log("time/action_time", self.action_time / self.action_count)
+                self.logger.log("time/trajectory_time", self.trajectory_time / self.trajectory_count)
 
         self.sample_time = 0
         self.log_prob_time = 0
