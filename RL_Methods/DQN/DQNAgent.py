@@ -5,7 +5,7 @@ import numpy as np
 import torch as th
 
 from RL_Methods.Agent import Agent
-from RL_Methods.DQN.Model import Model
+from RL_Methods.DQN.DQNModel import DQNModel
 from RL_Methods.Buffers.ExperienceBuffer import ExperienceBuffer
 from RL_Methods.utils.Callback import Callback
 from RL_Methods.utils.Schedule import Schedule
@@ -54,7 +54,7 @@ class DQNAgent(Agent):
 
         self.losses = []
 
-        self.model = Model(input_dim, action_dim, learning_rate, architecture, device)
+        self.model = DQNModel(input_dim, action_dim, learning_rate, architecture, device)
         self.exp_buffer = ExperienceBuffer(experience_buffer_size, input_dim, device)      
 
         if not self.callbacks is None:
@@ -136,8 +136,14 @@ class DQNAgent(Agent):
         buffer_file = "{}/{}_buffer".format(directory, prefix)
 
         parameters = dict(pickle.load(open(parameters_file, "rb")))
-        num_episodes = parameters.pop('num_episodes')
-        num_timesteps = parameters.pop('num_timesteps')
+        print(parameters)
+        try:
+            num_episodes = parameters.pop('num_episodes')
+            num_timesteps = parameters.pop('num_timesteps')
+        except:
+            num_episodes = 0
+            num_timesteps = 0
+
         agent = cls(
             **parameters,
             logger=logger,

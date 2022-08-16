@@ -55,7 +55,8 @@ class ListCallback(Callback):
     def update(self):
         for callback in self.list:
             callback.update()
-Callback
+
+
 class CheckpointCallback (Callback):
 
     def __init__(self, savedir, prefix, checkpoint_freq) -> None:

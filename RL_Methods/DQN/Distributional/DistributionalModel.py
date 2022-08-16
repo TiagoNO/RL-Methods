@@ -1,21 +1,18 @@
 import torchinfo
 import torch as th
 import torch.nn as nn
-from RL_Methods.DQN.Model import Model
+from RL_Methods.DQN.DQNModel import DQNModel
 
-class DistributionalModel(Model):
+class DistributionalModel(DQNModel):
 
     def __init__(self, input_dim, action_dim, learning_rate, n_atoms, min_v, max_v, architecture, device) -> None:
         self.n_atoms = n_atoms
         self.min_v = min_v
         self.max_v = max_v
         self.delta = (self.max_v - self.min_v) / (self.n_atoms - 1)
-        super().__init__(input_dim, action_dim, learning_rate, architecture, device)
-        self.register_buffer("support_vector", th.arange(self.min_v, self.max_v + self.delta, self.delta))
-        self.support_vector = self.support_vector.to(self.device)
-        self.softmax = nn.Softmax(dim=2)
+        super(DistributionalModel, self).__init__(input_dim, action_dim, learning_rate, architecture, device)
 
-    def make_network(self, achitecture, input_dim, output_dim):
+    def _make_network(self, achitecture, input_dim, output_dim, device):
         activation = achitecture['activation_fn']
         net_arch = achitecture['net_arch']
 
@@ -26,7 +23,12 @@ class DistributionalModel(Model):
             net.add_module("activation_{}".format(i+1), activation())
             last_dim = net_arch[i]
         net.add_module("ouput", nn.Linear(last_dim, output_dim * self.n_atoms, bias=True))
-        return net.to(self.device)
+
+        self.register_buffer("support_vector", th.arange(self.min_v, self.max_v + self.delta, self.delta))
+        self.support_vector = self.support_vector.to(device)
+        self.softmax = nn.Softmax(dim=2).to(device)
+
+        return net.float().to(device)
 
     def __str__(self) -> str:
         return torchinfo.summary(self.q_net, self.input_dim, device=self.device).__str__()

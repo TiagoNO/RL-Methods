@@ -1,14 +1,14 @@
 import torch.nn as nn
 from RL_Methods.DQN.Noisy.NoisyLinear import NoisyLinear, NoisyFactorizedLinear
-from RL_Methods.DQN.Model import Model
+from RL_Methods.DQN.DQNModel import DQNModel
 
-class NoisyModel(Model):
+class NoisyModel(DQNModel):
 
     def __init__(self, input_dim, action_dim, learning_rate, sigma_init, architecture, device) -> None:
         self.sigma_init = sigma_init
         super().__init__(input_dim, action_dim, learning_rate, architecture, device)
 
-    def make_network(self, achitecture, input_dim, output_dim) -> nn.Sequential:
+    def _make_network(self, achitecture, input_dim, output_dim, device) -> nn.Sequential:
         activation = achitecture['activation_fn']
         net_arch = achitecture['net_arch']
 
@@ -19,4 +19,4 @@ class NoisyModel(Model):
             net.add_module("activation_{}".format(i+1), activation())
             last_dim = net_arch[i]
         net.add_module("ouput", NoisyFactorizedLinear(last_dim, output_dim, self.sigma_init, bias=True))
-        return net
+        return net.float().to(device)
