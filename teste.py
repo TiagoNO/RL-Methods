@@ -1,4 +1,3 @@
-from tabnanny import check
 import gym
 from RL_Methods.DQN import DQNAgent
 from RL_Methods.DQN import DoubleDQNAgent
@@ -35,7 +34,7 @@ if __name__ == '__main__':
     th.set_num_threads(5)
     th.set_num_interop_threads(5)
 
-    num_timesteps = 100000
+    num_timesteps = 50000
     plot_every = 100
     debug_every = 100
     env_name = "CartPole-v0"
@@ -80,166 +79,166 @@ if __name__ == '__main__':
     dueling_arch = {'feature_arch':[64, 64], 'value_arch':[32], 'advantage_arch':[32], 'activation_fn':th.nn.ReLU}
     device = "cuda" if th.cuda.is_available() else "cpu"
 
-    # env = gym.make(env_name)
-    # dqnAgent = DQNAgent(
-    #                     env.observation_space.shape,
-    #                     env.action_space.n,
-    #                     learning_rate=LinearSchedule(initial_learning_rate, learning_rate_delta, final_learning_rate),
-    #                     epsilon=LinearSchedule(initial_epsilon, epsilon_delta, final_epsilon),
-    #                     gamma=gamma,
-    #                     batch_size=batch_size,
-    #                     experience_buffer_size=experience_buffer_size,
-    #                     target_network_sync_freq=target_network_sync_freq,
-    #                     grad_norm_clip=grad_norm_clip,
-    #                     architecture=arch,
-    #                     callbacks=CheckpointCallback("experiments/dqn/", "dqn", checkpoint_freq),
-    #                     logger=Logger("experiments/dqn/log_file"),
-    #                     log_freq=10,
-    #                     device=device
-    #                     )
-    # dqnAgent.train(env, num_timesteps)
-    # generate_graph(dqnAgent.logger.directory + "scores", dqnAgent.data['scores'])
-    # del env
-    # del dqnAgent
+    env = gym.make(env_name)
+    dqnAgent = DQNAgent(
+                        env.observation_space.shape,
+                        env.action_space.n,
+                        learning_rate=LinearSchedule(initial_learning_rate, learning_rate_delta, final_learning_rate),
+                        epsilon=LinearSchedule(initial_epsilon, epsilon_delta, final_epsilon),
+                        gamma=gamma,
+                        batch_size=batch_size,
+                        experience_buffer_size=experience_buffer_size,
+                        target_network_sync_freq=target_network_sync_freq,
+                        grad_norm_clip=grad_norm_clip,
+                        architecture=arch,
+                        callbacks=CheckpointCallback("experiments/dqn/", "dqn", checkpoint_freq),
+                        logger=Logger("experiments/dqn/log_file"),
+                        log_freq=10,
+                        device=device
+                        )
+    dqnAgent.train(env, num_timesteps)
+    generate_graph(dqnAgent.logger.directory + "scores", dqnAgent.data['scores'])
+    del env
+    del dqnAgent
 
-    # env = gym.make(env_name)
-    # doubledqnAgent = DoubleDQNAgent(
-    #                     env.observation_space.shape,
-    #                     env.action_space.n,
-    #                     learning_rate=LinearSchedule(initial_learning_rate, learning_rate_delta, final_learning_rate),
-    #                     epsilon=LinearSchedule(initial_epsilon, epsilon_delta, final_epsilon),
-    #                     gamma=gamma,
-    #                     batch_size=batch_size,
-    #                     experience_buffer_size=experience_buffer_size,
-    #                     target_network_sync_freq=target_network_sync_freq,
-    #                     grad_norm_clip=grad_norm_clip,
-    #                     architecture=arch,
-    #                     callbacks=CheckpointCallback("experiments/double/", "dqn", checkpoint_freq),
-    #                     logger=Logger("experiments/double/log_file"),
-    #                     log_freq=10,
-    #                     device=device
-    #                     )
-    # doubledqnAgent.train(env, num_timesteps)
-    # generate_graph(doubledqnAgent.logger.directory + "scores", doubledqnAgent.data['scores'])
-    # del env
-    # del doubledqnAgent
+    env = gym.make(env_name)
+    doubledqnAgent = DoubleDQNAgent(
+                        env.observation_space.shape,
+                        env.action_space.n,
+                        learning_rate=LinearSchedule(initial_learning_rate, learning_rate_delta, final_learning_rate),
+                        epsilon=LinearSchedule(initial_epsilon, epsilon_delta, final_epsilon),
+                        gamma=gamma,
+                        batch_size=batch_size,
+                        experience_buffer_size=experience_buffer_size,
+                        target_network_sync_freq=target_network_sync_freq,
+                        grad_norm_clip=grad_norm_clip,
+                        architecture=arch,
+                        callbacks=CheckpointCallback("experiments/double/", "dqn", checkpoint_freq),
+                        logger=Logger("experiments/double/log_file"),
+                        log_freq=10,
+                        device=device
+                        )
+    doubledqnAgent.train(env, num_timesteps)
+    generate_graph(doubledqnAgent.logger.directory + "scores", doubledqnAgent.data['scores'])
+    del env
+    del doubledqnAgent
 
 
-    # env = gym.make(env_name)
-    # prioritizedDQNAgent = PrioritizedDQNAgent(
-    #                     env.observation_space.shape,
-    #                     env.action_space.n,
-    #                     learning_rate=LinearSchedule(initial_learning_rate, learning_rate_delta, final_learning_rate),
-    #                     epsilon=LinearSchedule(initial_epsilon, epsilon_delta, final_epsilon),
-    #                     gamma=gamma,
-    #                     batch_size=batch_size,
-    #                     experience_buffer_size=experience_buffer_size,
-    #                     target_network_sync_freq=target_network_sync_freq,
-    #                     experience_prob_alpha=experience_prob_alpha,
-    #                     experience_beta=LinearSchedule(initial_experience_beta, experience_beta_delta, final_experience_beta),
-    #                     grad_norm_clip=grad_norm_clip,
-    #                     architecture=arch,
-    #                     callbacks=CheckpointCallback("experiments/prioritized/", "dqn", checkpoint_freq),
-    #                     logger=Logger("experiments/prioritized/log_file"),
-    #                     log_freq=10,
-    #                     device=device
-    #                     )
-    # prioritizedDQNAgent.train(env, num_timesteps)
-    # generate_graph(prioritizedDQNAgent.logger.directory + "scores", prioritizedDQNAgent.data['scores'])
-    # del env
-    # del prioritizedDQNAgent
+    env = gym.make(env_name)
+    prioritizedDQNAgent = PrioritizedDQNAgent(
+                        env.observation_space.shape,
+                        env.action_space.n,
+                        learning_rate=LinearSchedule(initial_learning_rate, learning_rate_delta, final_learning_rate),
+                        epsilon=LinearSchedule(initial_epsilon, epsilon_delta, final_epsilon),
+                        gamma=gamma,
+                        batch_size=batch_size,
+                        experience_buffer_size=experience_buffer_size,
+                        target_network_sync_freq=target_network_sync_freq,
+                        experience_prob_alpha=experience_prob_alpha,
+                        experience_beta=LinearSchedule(initial_experience_beta, experience_beta_delta, final_experience_beta),
+                        grad_norm_clip=grad_norm_clip,
+                        architecture=arch,
+                        callbacks=CheckpointCallback("experiments/prioritized/", "dqn", checkpoint_freq),
+                        logger=Logger("experiments/prioritized/log_file"),
+                        log_freq=10,
+                        device=device
+                        )
+    prioritizedDQNAgent.train(env, num_timesteps)
+    generate_graph(prioritizedDQNAgent.logger.directory + "scores", prioritizedDQNAgent.data['scores'])
+    del env
+    del prioritizedDQNAgent
     
-    # env = gym.make(env_name)
-    # duelingDQNAgent = DuelingDQNAgent(
-    #                     env.observation_space.shape,
-    #                     env.action_space.n,
-    #                     learning_rate=LinearSchedule(initial_learning_rate, learning_rate_delta, final_learning_rate),
-    #                     epsilon=LinearSchedule(initial_epsilon, epsilon_delta, final_epsilon),
-    #                     gamma=gamma,
-    #                     batch_size=batch_size,
-    #                     experience_buffer_size=experience_buffer_size,
-    #                     target_network_sync_freq=target_network_sync_freq,
-    #                     grad_norm_clip=grad_norm_clip,
-    #                     architecture=dueling_arch,
-    #                     callbacks=CheckpointCallback("experiments/dueling/", "dqn", checkpoint_freq),
-    #                     logger=Logger("experiments/dueling/log_file"),
-    #                     log_freq=10,
-    #                     device=device
-    #                     )
-    # duelingDQNAgent.train(env, num_timesteps)
-    # generate_graph(duelingDQNAgent.logger.directory + "scores", duelingDQNAgent.data['scores'])
-    # del env
-    # del duelingDQNAgent
+    env = gym.make(env_name)
+    duelingDQNAgent = DuelingDQNAgent(
+                        env.observation_space.shape,
+                        env.action_space.n,
+                        learning_rate=LinearSchedule(initial_learning_rate, learning_rate_delta, final_learning_rate),
+                        epsilon=LinearSchedule(initial_epsilon, epsilon_delta, final_epsilon),
+                        gamma=gamma,
+                        batch_size=batch_size,
+                        experience_buffer_size=experience_buffer_size,
+                        target_network_sync_freq=target_network_sync_freq,
+                        grad_norm_clip=grad_norm_clip,
+                        architecture=dueling_arch,
+                        callbacks=CheckpointCallback("experiments/dueling/", "dqn", checkpoint_freq),
+                        logger=Logger("experiments/dueling/log_file"),
+                        log_freq=10,
+                        device=device
+                        )
+    duelingDQNAgent.train(env, num_timesteps)
+    generate_graph(duelingDQNAgent.logger.directory + "scores", duelingDQNAgent.data['scores'])
+    del env
+    del duelingDQNAgent
 
-    # env = gym.make(env_name)
-    # multistepDQNAgent = MultiStepDQNAgent(
-    #                     env.observation_space.shape,
-    #                     env.action_space.n,
-    #                     learning_rate=LinearSchedule(initial_learning_rate, learning_rate_delta, final_learning_rate),
-    #                     epsilon=LinearSchedule(initial_epsilon, epsilon_delta, final_epsilon),
-    #                     gamma=gamma,
-    #                     batch_size=batch_size,
-    #                     experience_buffer_size=experience_buffer_size,
-    #                     target_network_sync_freq=target_network_sync_freq,
-    #                     trajectory_steps=trajectory_steps,
-    #                     grad_norm_clip=grad_norm_clip,
-    #                     architecture=arch,
-    #                     callbacks=CheckpointCallback("experiments/multistep/", "dqn", checkpoint_freq),
-    #                     logger=Logger("experiments/multistep/log_file"),
-    #                     log_freq=10,
-    #                     device=device
-    #                     )
-    # multistepDQNAgent.train(env, num_timesteps)
-    # generate_graph(multistepDQNAgent.logger.directory + "scores", multistepDQNAgent.data['scores'])
-    # del env
-    # del multistepDQNAgent
+    env = gym.make(env_name)
+    multistepDQNAgent = MultiStepDQNAgent(
+                        env.observation_space.shape,
+                        env.action_space.n,
+                        learning_rate=LinearSchedule(initial_learning_rate, learning_rate_delta, final_learning_rate),
+                        epsilon=LinearSchedule(initial_epsilon, epsilon_delta, final_epsilon),
+                        gamma=gamma,
+                        batch_size=batch_size,
+                        experience_buffer_size=experience_buffer_size,
+                        target_network_sync_freq=target_network_sync_freq,
+                        trajectory_steps=trajectory_steps,
+                        grad_norm_clip=grad_norm_clip,
+                        architecture=arch,
+                        callbacks=CheckpointCallback("experiments/multistep/", "dqn", checkpoint_freq),
+                        logger=Logger("experiments/multistep/log_file"),
+                        log_freq=10,
+                        device=device
+                        )
+    multistepDQNAgent.train(env, num_timesteps)
+    generate_graph(multistepDQNAgent.logger.directory + "scores", multistepDQNAgent.data['scores'])
+    del env
+    del multistepDQNAgent
 
-    # env = gym.make(env_name)
-    # noisyDQNAgent = NoisyNetDQNAgent(
-    #                     env.observation_space.shape,
-    #                     env.action_space.n,
-    #                     learning_rate=LinearSchedule(initial_learning_rate, learning_rate_delta, final_learning_rate),
-    #                     gamma=gamma,
-    #                     batch_size=batch_size,
-    #                     experience_buffer_size=experience_buffer_size,
-    #                     target_network_sync_freq=target_network_sync_freq,
-    #                     sigma_init=initial_sigma,
-    #                     grad_norm_clip=grad_norm_clip,
-    #                     architecture=arch,
-    #                     callbacks=CheckpointCallback("experiments/noisy/", "dqn", checkpoint_freq),
-    #                     logger=Logger("experiments/noisy/log_file"),
-    #                     log_freq=10,
-    #                     device=device
-    #                     )
-    # noisyDQNAgent.train(env, num_timesteps)
-    # generate_graph(noisyDQNAgent.logger.directory + "scores", noisyDQNAgent.data['scores'])
-    # del env
-    # del noisyDQNAgent
+    env = gym.make(env_name)
+    noisyDQNAgent = NoisyNetDQNAgent(
+                        env.observation_space.shape,
+                        env.action_space.n,
+                        learning_rate=LinearSchedule(initial_learning_rate, learning_rate_delta, final_learning_rate),
+                        gamma=gamma,
+                        batch_size=batch_size,
+                        experience_buffer_size=experience_buffer_size,
+                        target_network_sync_freq=target_network_sync_freq,
+                        sigma_init=initial_sigma,
+                        grad_norm_clip=grad_norm_clip,
+                        architecture=arch,
+                        callbacks=CheckpointCallback("experiments/noisy/", "dqn", checkpoint_freq),
+                        logger=Logger("experiments/noisy/log_file"),
+                        log_freq=10,
+                        device=device
+                        )
+    noisyDQNAgent.train(env, num_timesteps)
+    generate_graph(noisyDQNAgent.logger.directory + "scores", noisyDQNAgent.data['scores'])
+    del env
+    del noisyDQNAgent
 
-    # env = gym.make(env_name)
-    # distributionalDQNAgent = DistributionalDQNAgent(
-    #                     env.observation_space.shape,
-    #                     env.action_space.n,
-    #                     learning_rate=LinearSchedule(initial_learning_rate, learning_rate_delta, final_learning_rate),
-    #                     epsilon=LinearSchedule(initial_epsilon, epsilon_delta, final_epsilon),
-    #                     gamma=gamma,
-    #                     batch_size=batch_size,
-    #                     experience_buffer_size=experience_buffer_size,
-    #                     target_network_sync_freq=target_network_sync_freq,
-    #                     n_atoms=n_atoms,
-    #                     min_value=min_value,
-    #                     max_value=max_value,
-    #                     grad_norm_clip=grad_norm_clip,
-    #                     architecture=arch,
-    #                     callbacks=CheckpointCallback("experiments/distributional/", "dqn", checkpoint_freq),
-    #                     logger=Logger("experiments/distributional/log_file"),
-    #                     log_freq=10,
-    #                     device=device
-    #                     )
-    # distributionalDQNAgent.train(env, num_timesteps)
-    # generate_graph(distributionalDQNAgent.logger.directory + "scores", distributionalDQNAgent.data['scores'])
-    # del env
-    # del distributionalDQNAgent
+    env = gym.make(env_name)
+    distributionalDQNAgent = DistributionalDQNAgent(
+                        env.observation_space.shape,
+                        env.action_space.n,
+                        learning_rate=LinearSchedule(initial_learning_rate, learning_rate_delta, final_learning_rate),
+                        epsilon=LinearSchedule(initial_epsilon, epsilon_delta, final_epsilon),
+                        gamma=gamma,
+                        batch_size=batch_size,
+                        experience_buffer_size=experience_buffer_size,
+                        target_network_sync_freq=target_network_sync_freq,
+                        n_atoms=n_atoms,
+                        min_value=min_value,
+                        max_value=max_value,
+                        grad_norm_clip=grad_norm_clip,
+                        architecture=arch,
+                        callbacks=CheckpointCallback("experiments/distributional/", "dqn", checkpoint_freq),
+                        logger=Logger("experiments/distributional/log_file"),
+                        log_freq=10,
+                        device=device
+                        )
+    distributionalDQNAgent.train(env, num_timesteps)
+    generate_graph(distributionalDQNAgent.logger.directory + "scores", distributionalDQNAgent.data['scores'])
+    del env
+    del distributionalDQNAgent
 
     env = gym.make(env_name)
     rainbowAgent = RainbowAgent(
@@ -264,7 +263,6 @@ if __name__ == '__main__':
                         log_freq=10,
                         device=device
                         )
-    # rainbowAgent = RainbowAgent.load('experiments/rainbow/rainbow_5000_steps.zip', logger=Logger("experiments/rainbow/log_file_new"))
     rainbowAgent.train(env, num_timesteps)
     generate_graph(rainbowAgent.logger.directory + "scores", rainbowAgent.data['scores'])
     del env

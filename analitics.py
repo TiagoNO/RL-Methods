@@ -7,7 +7,6 @@ logger = Logger(filename)
 logger.load()
 
 
-
 try:
     plt.plot(logger.data["time/sample_time"], label='sample_time')
     plt.plot(logger.data["time/log_prob_time"], label='log_prob_time')
@@ -20,3 +19,23 @@ try:
     plt.show()
 except:
     print("Did not log time data")
+
+
+plt.plot(logger.data['train/timesteps'], logger.data['parameters/feature_extractor_L1_avg_noisy'], label='fe_L1') 
+plt.plot(logger.data['train/timesteps'], logger.data['parameters/feature_extractor_L3_avg_noisy'], label='fe_L3') 
+plt.plot(logger.data['train/timesteps'], logger.data['parameters/advantage_L1_avg_noisy'], label='ad_L1') 
+plt.plot(logger.data['train/timesteps'], logger.data['parameters/advantage_L3_avg_noisy'], label='ad_L3') 
+plt.plot(logger.data['train/timesteps'], logger.data['parameters/value_L1_avg_noisy'], label="v_L1") 
+plt.plot(logger.data['train/timesteps'], logger.data['parameters/value_L3_avg_noisy'], label="v_L3") 
+plt.legend()
+plt.show()
+plt.close()
+
+plt.plot(logger.data['train/timesteps'], logger.data['train/avg_ep_rewards'])
+plt.show()
+plt.close()
+
+plt.plot(logger.data['train/timesteps'], logger.data['parameters/beta'])
+plt.plot(logger.data['train/timesteps'], logger.data['train/avg_ep_rewards'])
+plt.show()
+plt.close()
