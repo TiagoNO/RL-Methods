@@ -1,10 +1,11 @@
 from RL_Methods.DQN.DQNAgent import DQNAgent
-from RL_Methods.Buffers.PrioritizedReplayBuffer import PrioritizedReplayBuffer
+from RL_Methods.Buffers.PrioritizedReplayBuffer import PrioritizedReplayBuffer, OptimizedPrioritizedReplayBuffer
 import torch as th
 
 from RL_Methods.utils.Callback import Callback
 from RL_Methods.utils.Schedule import Schedule
 from RL_Methods.utils.Logger import Logger
+import time
 
 class PrioritizedDQNAgent(DQNAgent):
 
@@ -49,9 +50,12 @@ class PrioritizedDQNAgent(DQNAgent):
         self.parameters['experience_beta'] = experience_beta
         self.parameters['experience_prob_alpha'] = experience_prob_alpha
         self.exp_buffer = PrioritizedReplayBuffer(experience_buffer_size, input_dim, device, experience_prob_alpha)
+        # self.exp_buffer = OptimizedPrioritizedReplayBuffer(experience_buffer_size, input_dim, device, experience_prob_alpha)
 
     def calculate_loss(self):
+        begin = time.time()
         samples = self.exp_buffer.sample(self.parameters['batch_size'], self.parameters['experience_beta'].get())
+        print(time.time() - begin)
 
         states_action_values = self.model.q_values(samples.states).gather(1, samples.actions.unsqueeze(-1)).squeeze(-1)
         with th.no_grad():
