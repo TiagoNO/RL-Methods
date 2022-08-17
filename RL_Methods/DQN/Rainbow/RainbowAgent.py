@@ -4,7 +4,7 @@ import time
 
 from RL_Methods.DQN.DQNAgent import DQNAgent
 from RL_Methods.DQN.Rainbow.RainbowModel import RainbowModel
-from RL_Methods.Buffers.PrioritizedReplayBuffer import PrioritizedReplayBuffer
+from RL_Methods.Buffers.PrioritizedReplayBuffer import PrioritizedReplayBuffer, OptimizedPrioritizedReplayBuffer
 from RL_Methods.DQN.Noisy.NoisyLinear import NoisyLinear, NoisyFactorizedLinear
 
 from RL_Methods.utils.Logger import Logger
@@ -96,6 +96,7 @@ class RainbowAgent(DQNAgent):
     def calculate_loss(self):
         begin = time.time()
         samples = self.exp_buffer.sample(self.parameters['batch_size'], self.parameters['experience_beta'].get())
+        # print(samples.states)
         self.sample_time += time.time() - begin
 
         begin = time.time()
@@ -156,17 +157,22 @@ class RainbowAgent(DQNAgent):
     def project_operator(self, distrib, rewards, dones):
         batch_size = len(rewards)
         projection = th.zeros((batch_size, self.model.n_atoms), dtype=th.float32).to(self.model.device)
-        for j in range(self.model.n_atoms):
-            atom = self.model.min_v + (j * self.model.delta)
-            tz_j = th.clip(rewards + ((~dones) * self.parameters['gamma'] * atom), self.model.min_v, self.model.max_v)
-            b_j = (tz_j - self.model.min_v) / self.model.delta
-            l = th.floor(b_j).long()
-            u = th.ceil(b_j).long()
-            eq_mask = u == l
-            projection[eq_mask, l[eq_mask]] += distrib[eq_mask, j]
-            ne_mask = u != l
-            projection[ne_mask, l[ne_mask]] += distrib[ne_mask, j] * (u - b_j)[ne_mask]
-            projection[ne_mask, u[ne_mask]] += distrib[ne_mask, j] * (b_j - l)[ne_mask]
+
+        atoms = (~dones.unsqueeze(1) * (self.parameters['gamma']**self.parameters['trajectory_steps']) * self.model.support_vector.unsqueeze(0))
+        tz = th.clip(rewards.unsqueeze(1) + atoms, self.model.min_v, self.model.max_v)
+        b = (tz - self.model.min_v) / self.model.delta
+        low = th.floor(b).long()
+        upper = th.ceil(b).long()
+
+        low[(upper > 0) * (low == upper)] -= 1
+        upper[(low < (self.model.n_atoms - 1)) * (low == upper)] += 1
+
+        # Distribute probability of Tz
+        projection = th.zeros(batch_size, self.model.n_atoms)
+        offset = th.linspace(0, ((batch_size - 1) * self.model.n_atoms), batch_size).unsqueeze(1).expand(batch_size, self.model.n_atoms)
+        projection.view(-1).index_add_(0, (low + offset).view(-1).long(), (distrib * (upper.float() - b)).view(-1))  # m_l = m_l + p(s_t+n, a*)(u - b)
+        projection.view(-1).index_add_(0, (upper + offset).view(-1).long(), (distrib * (b - low.float())).view(-1))  # m_u = m_u + p(s_t+n, a*)(b - l)
+
         return projection
 
 
