@@ -42,6 +42,7 @@ class Agent:
     def endEpisode(self):
         if not self.logger is None:
             self.logger.log("train/avg_ep_rewards", np.mean(self.data['scores'][-100:]))
+            self.logger.update("train/ep_score", self.data['scores'][-1])
             self.logger.log("train/timesteps", self.parameters['num_timesteps'])
             self.logger.log("train/episodes", self.parameters['num_episodes'])
             self.logger.print()
