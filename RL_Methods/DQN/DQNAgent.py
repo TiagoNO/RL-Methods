@@ -156,6 +156,7 @@ class DQNAgent(Agent):
         agent.model.load(model_file)
         try:
             agent.exp_buffer = pickle.load(open(buffer_file, "rb"))
+            agent.exp_buffer.device = device
         except:
             print("Could not load exp buffer...")
 
