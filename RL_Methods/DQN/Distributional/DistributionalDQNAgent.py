@@ -75,8 +75,9 @@ class DistributionalDQNAgent(DQNAgent):
 
     def project_operator(self, distrib, rewards, dones):
         batch_size = len(rewards)
-        projection = th.zeros((batch_size, self.model.n_atoms), dtype=th.float32).to(self.model.device)
-        atoms = (~dones.unsqueeze(1) * self.parameters['gamma'] * self.model.support_vector.unsqueeze(0))
+        projection = th.zeros((batch_size, self.model.n_atoms), dtype=th.float32)
+
+        atoms = (~dones.unsqueeze(1) * (self.parameters['gamma']**self.parameters['trajectory_steps']) * self.model.support_vector.unsqueeze(0).to('cpu'))
         tz = th.clip(rewards.unsqueeze(1) + atoms, self.model.min_v, self.model.max_v)
         b = (tz - self.model.min_v) / self.model.delta
         low = th.floor(b).long()
@@ -88,5 +89,4 @@ class DistributionalDQNAgent(DQNAgent):
         offset = th.linspace(0, ((batch_size - 1) * self.model.n_atoms), batch_size).unsqueeze(1).expand(batch_size, self.model.n_atoms)
         projection.view(-1).index_add_(0, (low + offset).view(-1).long(), (distrib * (upper.float() - b)).view(-1))
         projection.view(-1).index_add_(0, (upper + offset).view(-1).long(), (distrib * (b - low.float())).view(-1))
-        
         return projection.to(self.model.device)
