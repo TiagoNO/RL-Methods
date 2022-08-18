@@ -161,15 +161,14 @@ class RainbowAgent(DQNAgent):
         atoms = (~dones.unsqueeze(1) * (self.parameters['gamma']**self.parameters['trajectory_steps']) * self.model.support_vector.unsqueeze(0))
         tz = th.clip(rewards.unsqueeze(1) + atoms, self.model.min_v, self.model.max_v)
         b = (tz - self.model.min_v) / self.model.delta
-        low = th.floor(b).long()
-        upper = th.ceil(b).long()
+        b = b.to(self.model.device)
+        low = th.floor(b).long().to(self.model.device)
+        upper = th.ceil(b).long().to(self.model.device)
 
         low[(upper > 0) * (low == upper)] -= 1
         upper[(low < (self.model.n_atoms - 1)) * (low == upper)] += 1
-
         # Distribute probability of Tz
-        projection = th.zeros(batch_size, self.model.n_atoms)
-        offset = th.linspace(0, ((batch_size - 1) * self.model.n_atoms), batch_size).unsqueeze(1).expand(batch_size, self.model.n_atoms)
+        offset = th.linspace(0, ((batch_size - 1) * self.model.n_atoms), batch_size).unsqueeze(1).expand(batch_size, self.model.n_atoms).to(self.model.device)
         projection.view(-1).index_add_(0, (low + offset).view(-1).long(), (distrib * (upper.float() - b)).view(-1))  # m_l = m_l + p(s_t+n, a*)(u - b)
         projection.view(-1).index_add_(0, (upper + offset).view(-1).long(), (distrib * (b - low.float())).view(-1))  # m_u = m_u + p(s_t+n, a*)(b - l)
 

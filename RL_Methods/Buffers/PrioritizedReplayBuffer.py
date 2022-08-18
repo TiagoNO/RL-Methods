@@ -1,7 +1,7 @@
 import torch as th
 import numpy as np
 from RL_Methods.Buffers.ExperienceBuffer import *
-import time
+
 class PrioritizedExperienceSamples(ExperienceSamples):
     def __init__(self, states, actions, rewards, dones, next_states, indices, weights, device):
         super().__init__(states, actions, rewards, dones, next_states, device)
@@ -97,7 +97,6 @@ class OptimizedPrioritizedReplayBuffer(ExperienceBuffer):
 
         for i in range(batch_size):
             sum_value = np.random.rand() * self._sum()
-            # print(sum_value)
             index = self._get_sum_index(sum_value)
 
             prob = self.sum_prios[index + self.max_sz] / self._sum()
@@ -106,8 +105,6 @@ class OptimizedPrioritizedReplayBuffer(ExperienceBuffer):
             indices[i] = index
             weights[i] = weight / max_weight
 
-        # print(indices)
-        # input()
         return PrioritizedExperienceSamples(
                     self.obs[indices], 
                     self.actions[indices], 
@@ -120,9 +117,7 @@ class OptimizedPrioritizedReplayBuffer(ExperienceBuffer):
                     )
 
     def update_priorities(self, batch_indices, batch_priorities):
-        begin = time.time()
         for idx, prio in zip(batch_indices, batch_priorities):
             self.max_priority = max(prio, self.max_priority)
             prio_alpha = (prio ** self.prob_alpha)
             self._set_priority(idx, prio_alpha)
-        print(time.time() - begin)
