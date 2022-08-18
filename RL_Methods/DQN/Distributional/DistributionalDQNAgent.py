@@ -68,7 +68,7 @@ class DistributionalDQNAgent(DQNAgent):
             next_actions = th.argmax(next_q_values, dim=1)
             next_distrib = th.softmax(next_atoms, dim=2)
             next_best_distrib = next_distrib[range(samples.size), next_actions]
-            projection = self.project_operator(next_best_distrib, samples.rewards, samples.dones)
+            projection = self.project_operator(next_best_distrib.cpu(), samples.rewards.cpu(), samples.dones.cpu())
 
         loss_v = (-state_log_prob * projection)
         return loss_v.sum(dim=1).mean()
@@ -85,8 +85,8 @@ class DistributionalDQNAgent(DQNAgent):
         low[(upper > 0) * (low == upper)] -= 1
         upper[(low < (self.model.n_atoms - 1)) * (low == upper)] += 1
 
-        # Distribute probability of Tz
         offset = th.linspace(0, ((batch_size - 1) * self.model.n_atoms), batch_size).unsqueeze(1).expand(batch_size, self.model.n_atoms)
-        projection.view(-1).index_add_(0, (low + offset).view(-1).long(), (distrib * (upper.float() - b)).view(-1))  # m_l = m_l + p(s_t+n, a*)(u - b)
-        projection.view(-1).index_add_(0, (upper + offset).view(-1).long(), (distrib * (b - low.float())).view(-1))  # m_u = m_u + p(s_t+n, a*)(b - l)
-        return projection
+        projection.view(-1).index_add_(0, (low + offset).view(-1).long(), (distrib * (upper.float() - b)).view(-1))
+        projection.view(-1).index_add_(0, (upper + offset).view(-1).long(), (distrib * (b - low.float())).view(-1))
+        
+        return projection.to(self.model.device)
