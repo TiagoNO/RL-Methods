@@ -51,11 +51,14 @@ class PrioritizedDQNAgent(DQNAgent):
         self.parameters['experience_prob_alpha'] = experience_prob_alpha
         self.exp_buffer = PrioritizedReplayBuffer(experience_buffer_size, input_dim, device, experience_prob_alpha)
         # self.exp_buffer = OptimizedPrioritizedReplayBuffer(experience_buffer_size, input_dim, device, experience_prob_alpha)
+        self.sample_time = 0
+        self.count = 1
 
     def calculate_loss(self):
         begin = time.time()
         samples = self.exp_buffer.sample(self.parameters['batch_size'], self.parameters['experience_beta'].get())
-        print(time.time() - begin)
+        self.sample_time += time.time() - begin
+        self.count += 1
 
         states_action_values = self.model.q_values(samples.states).gather(1, samples.actions.unsqueeze(-1)).squeeze(-1)
         with th.no_grad():
@@ -75,4 +78,7 @@ class PrioritizedDQNAgent(DQNAgent):
 
     def endEpisode(self):
         self.logger.log("parameters/beta", self.parameters['experience_beta'].get())
+        self.logger.log("time/sample_time", self.sample_time / self.count)
+        self.sample_time = 0
+        self.count = 1
         super().endEpisode()
