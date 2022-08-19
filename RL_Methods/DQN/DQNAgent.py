@@ -1,3 +1,4 @@
+from json import load
 import os
 import gym
 import pickle
@@ -14,7 +15,7 @@ from RL_Methods.utils.Common import unzip_files, zip_files
 
 class DQNAgent(Agent):
 
-    def __init__(self, 
+    def __init__(self,
                     input_dim : gym.Space, 
                     action_dim : gym.Space, 
                     learning_rate : Schedule,
@@ -123,20 +124,18 @@ class DQNAgent(Agent):
         os.removedirs(directory)
 
     @classmethod
-    def load(cls, filename, logger=None, callback=None, device='cpu') -> Agent:
+    def load(cls, filename, logger=None, callback=None, load_buffer=False, device='cpu') -> Agent:
         directory = filename[:filename.rfind(".zip")]
         unzip_files(filename, directory)
 
         name = filename[filename.rfind("/")+1:]
         prefix = name[:name.find("_")]
-        # print(name, prefix)
 
         model_file = "{}/{}".format(directory, prefix)
         parameters_file = "{}/{}_parameters".format(directory, prefix)
         buffer_file = "{}/{}_buffer".format(directory, prefix)
 
         parameters = dict(pickle.load(open(parameters_file, "rb")))
-        print(parameters)
         try:
             num_episodes = parameters.pop('num_episodes')
             num_timesteps = parameters.pop('num_timesteps')
@@ -155,8 +154,9 @@ class DQNAgent(Agent):
 
         agent.model.load(model_file)
         try:
-            agent.exp_buffer = pickle.load(open(buffer_file, "rb"))
-            agent.exp_buffer.device = device
+            if load_buffer:
+                agent.exp_buffer = pickle.load(open(buffer_file, "rb"))
+                agent.exp_buffer.device = device
         except:
             print("Could not load exp buffer...")
 
