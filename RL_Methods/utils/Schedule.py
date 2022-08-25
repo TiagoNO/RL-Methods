@@ -14,12 +14,14 @@ class Schedule:
         self.cur_value = self.initial_value
 
     def get(self):
-        return self.cur_value        
+        return self.cur_value
+    
+    def __str__(self) -> str:
+        return "({}->{}:{}, step {})".format(self.initial_value, self.final_value, self.cur_value, self.delta)
 
 class ConstantSchedule(Schedule):
     def __init__(self, initial_value) -> None:
         super().__init__(initial_value, 0, 0)
-
 
 class LinearSchedule (Schedule):
 
