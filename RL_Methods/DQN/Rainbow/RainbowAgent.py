@@ -128,32 +128,6 @@ class RainbowAgent(DQNAgent):
         self.count += 1
         return loss_v.mean()
 
-
-    def step(self) -> None:
-        if len(self.exp_buffer) < self.parameters['batch_size']:
-            return
-
-        self.model.train(True)
-        self.model.optimizer.zero_grad()
-        loss = self.calculate_loss()
-        loss.backward()
-
-        # total_norm=0
-        # for p in self.model.parameters():
-        #     try:
-        #         param_norm = p.grad.detach().data.norm(2)
-        #         print(p.names, param_norm.item() ** 2)
-        #         total_norm += param_norm.item() ** 2
-        #     except:
-        #         continue
-        # total_norm = total_norm ** 0.5
-        # print(total_norm)
-        # input()
-
-        th.nn.utils.clip_grad_norm_(self.model.parameters(), self.parameters['grad_norm_clip'])
-        self.model.optimizer.step()
-
-
     def project_operator(self, distrib, rewards, dones):
         batch_size = len(rewards)
         projection = th.zeros((batch_size, self.model.n_atoms), dtype=th.float32)
