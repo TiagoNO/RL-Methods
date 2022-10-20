@@ -142,7 +142,10 @@ class DQNAgent(Agent):
         parameters_file = "{}/{}_parameters".format(directory, prefix)
         buffer_file = "{}/{}_buffer".format(directory, prefix)
 
-        parameters = dict(pickle.load(open(parameters_file, "rb")))
+        parameters_f_ptr = open(parameters_file, "rb")
+        parameters = dict(pickle.load(parameters_f_ptr))
+        parameters_f_ptr.close()
+
         try:
             num_episodes = parameters.pop('num_episodes')
             num_timesteps = parameters.pop('num_timesteps')
@@ -162,8 +165,10 @@ class DQNAgent(Agent):
         agent.model.load(model_file)
         try:
             if load_buffer:
+                buffer_f_ptr = open(buffer_file, "rb")
                 agent.exp_buffer = pickle.load(open(buffer_file, "rb"))
                 agent.exp_buffer.device = device
+                buffer_f_ptr.close()
         except:
             print("Could not load exp buffer...")
 
