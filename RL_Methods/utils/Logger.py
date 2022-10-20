@@ -38,12 +38,13 @@ class Logger:
         print("|" + "=" * (self.tabs_exp-1) + "|")
 
     def dump(self):
-        with open(self.directory + self.filename, 'a') as f:
-            for key in self.data.keys():
-                f.write("{}:".format(key))
-                for v in self.data[key]:
-                    f.write("{} ".format(v))
-                f.write("\n")
+        f = open(self.directory + self.filename, 'a')
+        for key in self.data.keys():
+            f.write("{}:".format(key))
+            for v in self.data[key]:
+                f.write("{} ".format(v))
+            f.write("\n")
+        f.close()
         self.clear()
 
     def retrieve(self, filename=None):
@@ -51,20 +52,21 @@ class Logger:
             filename = self.directory + self.filename
         try:
             retrieved_data = {}
-            with open(filename, 'r') as f:
-                for lines in f.readlines():
-                    key, list_values = lines.split(':')
-                    data = []
-                    for v in list_values.split(" ")[:-1]:
-                        data.append(float(v))
+            f = open(filename, 'r')
+            for lines in f.readlines():
+                key, list_values = lines.split(':')
+                data = []
+                for v in list_values.split(" ")[:-1]:
+                    data.append(float(v))
 
-                    if key in retrieved_data:
-                        retrieved_data[key].extend(data)
-                    else:
-                        retrieved_data[key] = data
+                if key in retrieved_data:
+                    retrieved_data[key].extend(data)
+                else:
+                    retrieved_data[key] = data
+            f.close()
             return retrieved_data
         except Exception as e:
-            # print(e)
+            print(e)
             return {}
 
     def clear(self):

@@ -11,5 +11,6 @@ def zip_files(directory, dest_name):
     zf.close()
 
 def unzip_files(filename, destination="") -> str:
-    with zipfile.ZipFile(filename, 'r') as zip_ref:
-        zip_ref.extractall(destination)
+    zip_ref = zipfile.ZipFile(filename, 'r')
+    zip_ref.extractall(destination)
+    zip_ref.close()

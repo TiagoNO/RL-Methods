@@ -116,9 +116,14 @@ class DQNAgent(Agent):
         buffer_file = "{}/{}_buffer".format(directory, prefix)
 
         self.model.save(model_file)
-        pickle.dump(self.parameters, open(parameters_file, "wb"))
+        params_f_ptr = open(parameters_file, "wb")
+        pickle.dump(self.parameters, params_f_ptr)
+        params_f_ptr.close()
+
         if save_exp_buffer:
-            pickle.dump(self.exp_buffer, open(buffer_file, "wb"))
+            buffer_f_ptr = open(parameters_file, "wb")
+            pickle.dump(self.exp_buffer, buffer_f_ptr)
+            buffer_f_ptr.close()
 
         zip_files(directory, directory)
         for files in os.listdir(directory):
