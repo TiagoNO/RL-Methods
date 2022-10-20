@@ -30,6 +30,12 @@ class Agent:
             'scores':[]
         }
 
+    def __str__(self) -> str:
+        params = "{}:\n".format(self.__class__.__name__)
+        for p in self.parameters:
+            params += "{}: {}\n".format(p, self.parameters[p])
+        return params
+
     def beginTrainning(self):
         pass
 

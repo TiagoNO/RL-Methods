@@ -67,6 +67,11 @@ class CheckpointCallback (Callback):
         if not os.path.isdir(self.savedir):
             os.makedirs(self.savedir)
 
+    def beginTrainning(self):
+        f = open(self.savedir + self.prefix + "_parameters.txt", "w")
+        f.write(self.agent.__str__())
+        f.close()
+
     def update(self):
         if self.agent.parameters['num_timesteps'] % self.checkpoint_freq == 0 and self.agent.parameters['num_timesteps'] > 0:
             self.agent.save(self.savedir + self.prefix + "_{}_steps".format(self.agent.parameters['num_timesteps']), prefix=self.prefix)
