@@ -4,11 +4,11 @@ import numpy as np
 class ExperienceSamples:
 
     def __init__(self, states, actions, rewards, dones, next_states, device):
-        self.states = th.tensor(np.array(states, copy=False), dtype=th.float).to(device)
-        self.actions = th.tensor(np.array(actions, copy=False), dtype=th.int64).to(device)
-        self.rewards = th.tensor(np.array(rewards, copy=False), dtype=th.float32).to(device)
-        self.dones = th.tensor(np.array(dones, copy=False), dtype=th.bool).to(device)
-        self.next_states = th.tensor(np.array(next_states, copy=False), dtype=th.float).to(device)
+        self.states = th.from_numpy(states).to(device)
+        self.actions = th.from_numpy(actions).to(device)
+        self.rewards = th.from_numpy(rewards).to(device)
+        self.dones = th.from_numpy(dones).to(device)
+        self.next_states = th.from_numpy(next_states).to(device)
         self.size = len(rewards)
 
 class ExperienceBuffer:
