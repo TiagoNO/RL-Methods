@@ -121,7 +121,7 @@ class DQNAgent(Agent):
         params_f_ptr.close()
 
         if save_exp_buffer:
-            buffer_f_ptr = open(parameters_file, "wb")
+            buffer_f_ptr = open(buffer_file, "wb")
             pickle.dump(self.exp_buffer, buffer_f_ptr)
             buffer_f_ptr.close()
 
@@ -143,6 +143,7 @@ class DQNAgent(Agent):
         buffer_file = "{}/{}_buffer".format(directory, prefix)
 
         parameters_f_ptr = open(parameters_file, "rb")
+        print(parameters_file)
         parameters = dict(pickle.load(parameters_f_ptr))
         parameters_f_ptr.close()
 
