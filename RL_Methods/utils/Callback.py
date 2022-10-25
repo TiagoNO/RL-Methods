@@ -68,7 +68,7 @@ class CheckpointCallback (Callback):
             os.makedirs(self.savedir)
 
     def beginTrainning(self):
-        f = open(self.savedir + self.prefix + "_parameters.txt", "w")
+        f = open(self.savedir + self.prefix + "_experiment_info.txt", "w")
         f.write(self.agent.__str__())
         f.close()
 
