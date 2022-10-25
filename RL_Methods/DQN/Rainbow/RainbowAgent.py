@@ -40,7 +40,7 @@ class RainbowAgent(DQNAgent):
                     ):
 
         if epsilon is None:
-            epsilon=LinearSchedule(0.1, -1e-4, 0.0)
+            epsilon=LinearSchedule(0.0, -1e-4, 0.0)
 
         # Using Noisy network, so we dont need e-greedy search
         # but, for cartpole, initial small epsilon helps convergence
@@ -48,7 +48,7 @@ class RainbowAgent(DQNAgent):
                         input_dim=input_dim, 
                         action_dim=action_dim, 
                         learning_rate=learning_rate,
-                        epsilon=LinearSchedule(0.0, -1e-4, 0.0),
+                        epsilon=epsilon,
                         gamma=gamma, 
                         batch_size=batch_size, 
                         experience_buffer_size=experience_buffer_size, 
