@@ -56,12 +56,7 @@ class Agent:
                 self.logger.dump()
 
     def update(self, state, action, reward, done, next_state, info):
-        self.data['state'] = state
-        self.data['action'] = action
-        self.data['reward'] = reward
-        self.data['done'] = done
-        self.data['next_state'] = next_state
-        self.data['info'] = info
+        pass
 
     def getAction(self, state, deterministic=True, mask=None):
         pass
@@ -85,7 +80,6 @@ class Agent:
             self.beginEpisode(obs)
             if not self.callbacks is None:
                 self.callbacks.beginEpisode()
-
             while not done:
                 action = self.getAction(obs, mask=action_mask)
                 obs_, reward, done, info = env.step(action)
@@ -95,6 +89,13 @@ class Agent:
                     action_mask = info['mask']
 
                 self.update(obs, action, reward, done, obs_, info)
+                self.data['state'] = obs
+                self.data['action'] = action
+                self.data['reward'] = reward
+                self.data['done'] = done
+                self.data['next_state'] = obs_
+                self.data['info'] = info
+
                 if not self.callbacks is None:
                     self.callbacks.update()
 
