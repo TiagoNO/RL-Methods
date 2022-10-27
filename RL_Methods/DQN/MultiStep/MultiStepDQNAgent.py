@@ -24,7 +24,7 @@ class MultiStepDQNAgent(DQNAgent):
                     log_freq: int = 1,
                     save_log_every=100,
                     device='cpu',
-                    debug=False
+                    verbose=0
                 ):
         
         super().__init__(
@@ -43,7 +43,7 @@ class MultiStepDQNAgent(DQNAgent):
                         log_freq=log_freq,
                         save_log_every=save_log_every,
                         device=device,
-                        debug=False
+                        verbose=verbose
                         )
 
         self.trajectory = []
@@ -89,16 +89,9 @@ class MultiStepDQNAgent(DQNAgent):
         return self.model.loss_func(states_action_values, expected_state_action_values).mean()
 
     def update(self, state, action, reward, done, next_state, info):
-        super().update(state, action, reward, done, next_state, info)
         if len(self.trajectory) >= self.parameters['trajectory_steps']:
             t_state, t_action, t_reward, t_done, t_next_state = self.getTrajectory()
             self.exp_buffer.add(t_state, t_action, t_reward, t_done, t_next_state)
-            self.step()
             self.trajectory.pop(0)
 
-        self.parameters['epsilon'].update()
-        self.model.update_learning_rate()
         self.trajectory.append([state, action, reward, done, next_state])
-
-        if self.parameters['num_timesteps'] % self.parameters['target_network_sync_freq'] == 0:
-            self.model.sync()
