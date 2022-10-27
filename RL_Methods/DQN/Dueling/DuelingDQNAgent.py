@@ -21,7 +21,7 @@ class DuelingDQNAgent(DQNAgent):
                     log_freq: int = 1,
                     save_log_every=100,
                     device='cpu',
-                    debug=False
+                    verbose=0
                 ):
                 
         super().__init__(
@@ -40,7 +40,7 @@ class DuelingDQNAgent(DQNAgent):
                         log_freq=log_freq,
                         save_log_every=save_log_every,
                         device=device,
-                        debug=debug
+                        verbose=verbose
                         )
 
         self.model = DuelingModel(input_dim, action_dim, learning_rate, architecture, device)

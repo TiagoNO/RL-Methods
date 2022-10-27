@@ -1,9 +1,9 @@
-from json import load
 import os
 import gym
 import pickle
 import numpy as np
 import torch as th
+import time
 
 from RL_Methods.Agent import Agent
 from RL_Methods.DQN.DQNModel import DQNModel
@@ -31,7 +31,7 @@ class DQNAgent(Agent):
                     log_freq: int = 1,
                     save_log_every=100,
                     device='cpu',
-                    debug=False
+                    verbose=0
                 ):        
 
         super(DQNAgent, self).__init__(
@@ -39,7 +39,7 @@ class DQNAgent(Agent):
             logger=logger, 
             log_freq=log_freq, 
             save_log_every=save_log_every,
-            debug=debug
+            verbose=verbose
             )
 
         self.parameters['input_dim'] = input_dim
@@ -52,8 +52,6 @@ class DQNAgent(Agent):
         self.parameters['target_network_sync_freq'] = target_network_sync_freq
         self.parameters['grad_norm_clip'] = grad_norm_clip
         self.parameters['architecture']= architecture
-
-        self.losses = []
 
         self.model = DQNModel(input_dim, action_dim, learning_rate, architecture, device)
         self.exp_buffer = ExperienceBuffer(experience_buffer_size, input_dim, device)      
@@ -69,7 +67,7 @@ class DQNAgent(Agent):
             prob = np.array(mask, dtype=np.float) / np.sum(mask)
             return np.random.choice(self.model.action_dim, 1, p=prob).item()
         else:
-            state = th.tensor(state, dtype=th.float).to(self.model.device)
+            state = th.from_numpy(state).to(self.model.device)
             action = self.model.predict(state, deterministic, mask=np.invert(mask))
             return action
 
@@ -88,24 +86,25 @@ class DQNAgent(Agent):
             return
 
         self.model.train(True)
-        self.model.optimizer.zero_grad()        
+        self.model.optimizer.zero_grad()
         loss = self.calculate_loss()
-        self.logger.log("train/loss", loss.item())
+        # self.logger.log("train/loss", loss.item())
 
         loss.backward()
         th.nn.utils.clip_grad_norm_(self.model.parameters(), self.parameters['grad_norm_clip'])
         self.model.optimizer.step()
 
-
-    def update(self, state, action, reward, done, next_state, info) -> None:
-        super().update(state, action, reward, done, next_state, info)
-        self.exp_buffer.add(state, action, reward, done, next_state)
+    def learn(self):
         self.step()
         self.parameters['epsilon'].update()
         self.model.update_learning_rate()
 
         if self.parameters['num_timesteps'] % self.parameters['target_network_sync_freq'] == 0:
             self.model.sync()
+
+    def update(self, state, action, reward, done, next_state, info) -> None:
+        super().update(state, action, reward, done, next_state, info)
+        self.exp_buffer.add(state, action, reward, done, next_state)
 
     def save(self, directory, prefix="dqn", save_exp_buffer=True) -> None:
         if not os.path.isdir(directory):

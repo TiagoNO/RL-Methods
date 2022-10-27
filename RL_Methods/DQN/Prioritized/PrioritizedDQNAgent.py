@@ -27,7 +27,7 @@ class PrioritizedDQNAgent(DQNAgent):
                     log_freq: int = 1,
                     save_log_every=100,
                     device='cpu',
-                    debug=False
+                    verbose=0
                     ):
         super().__init__(
                         input_dim=input_dim, 
@@ -45,7 +45,7 @@ class PrioritizedDQNAgent(DQNAgent):
                         log_freq=log_freq,
                         save_log_every=save_log_every,
                         device=device,
-                        debug=debug
+                        verbose=0
                         )
         self.parameters['experience_beta'] = experience_beta
         self.parameters['experience_prob_alpha'] = experience_prob_alpha
@@ -70,11 +70,6 @@ class PrioritizedDQNAgent(DQNAgent):
         self.exp_buffer.update_priorities(samples.indices, loss.detach().cpu().numpy())
         self.parameters['experience_beta'].update()
         return loss.mean()
-
-    # def print(self):
-    #     super().print()
-    #     print("| Beta: {}\t|".format(self.beta.get()).expandtabs(45))
-    #     print("|" + "=" * 44 + "|")
 
     def endEpisode(self):
         self.logger.log("parameters/beta", self.parameters['experience_beta'].get())

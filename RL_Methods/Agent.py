@@ -9,14 +9,14 @@ from RL_Methods.utils.Schedule import Schedule
 
 class Agent:
 
-    def __init__(self, callbacks : Callback = None, logger : Logger = None, log_freq=1, save_log_every=100, debug=False) -> None:
+    def __init__(self, callbacks : Callback = None, logger : Logger = None, log_freq:int=1, save_log_every:int=100, verbose:int=0) -> None:
         self.logger = logger
         self.callbacks = callbacks
         
         self.parameters = {}
         self.parameters['log_freq'] = log_freq
         self.parameters['save_log_every'] = save_log_every
-        self.parameters['debug'] = debug
+        self.parameters['verbose'] = verbose
         self.parameters['num_timesteps'] = 0
         self.parameters['num_episodes'] = 1
         self.data = {
@@ -66,6 +66,9 @@ class Agent:
     def getAction(self, state, deterministic=True, mask=None):
         pass
 
+    def learn(self):
+        pass
+
     def train(self, env : gym.Env, total_timesteps : int, reset=False):
         self.total_timesteps = int(total_timesteps)
         self.data['scores'].clear()
@@ -86,6 +89,7 @@ class Agent:
             while not done:
                 action = self.getAction(obs, mask=action_mask)
                 obs_, reward, done, info = env.step(action)
+                self.learn()
                 
                 if 'mask' in info:
                     action_mask = info['mask']
@@ -93,6 +97,7 @@ class Agent:
                 self.update(obs, action, reward, done, obs_, info)
                 if not self.callbacks is None:
                     self.callbacks.update()
+
 
                 score += reward
                 obs = obs_     

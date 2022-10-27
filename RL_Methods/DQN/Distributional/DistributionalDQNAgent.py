@@ -29,7 +29,7 @@ class DistributionalDQNAgent(DQNAgent):
                     log_freq: int = 1,
                     save_log_every=100,
                     device='cpu',
-                    debug=False
+                    verbose=0
                 ):
         super().__init__(
                         input_dim=input_dim, 
@@ -47,7 +47,7 @@ class DistributionalDQNAgent(DQNAgent):
                         log_freq=log_freq,
                         save_log_every=save_log_every,
                         device=device,
-                        debug=debug
+                        verbose=verbose
                         )
         self.parameters['n_atoms'] = n_atoms
         self.parameters['min_value'] = min_value
