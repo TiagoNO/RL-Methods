@@ -96,8 +96,8 @@ class RainbowAgent(DQNAgent):
             projection = self.project_operator(next_best_distrib, samples.rewards, samples.dones)
 
         loss_v = (-state_log_prob * projection).sum(dim=1)
-
         loss_v *= samples.weights
+
         self.exp_buffer.update_priorities(samples.indices, loss_v.detach().cpu().numpy())
         self.parameters['experience_beta'].update()
         return loss_v.mean()
@@ -151,17 +151,17 @@ class RainbowAgent(DQNAgent):
         self.trajectory.append([state, action, reward, done, next_state])
 
     def endEpisode(self):
-        # if not self.logger is None:
-        #     self.logger.log("parameters/beta", self.parameters['experience_beta'].get())
-        #     for idx, p in enumerate(self.model.features_extractor.modules()): 
-        #         if type(p) == NoisyLinear or type(p) == NoisyFactorizedLinear:
-        #             self.logger.log("parameters/feature_extractor_L{}_avg_noisy".format(idx), p.sigma_weight.mean().item())
+        if not self.logger is None and self.parameters['verbose'] >= 1:
+            self.logger.log("parameters/beta", self.parameters['experience_beta'].get())
+            for idx, p in enumerate(self.model.features_extractor.modules()): 
+                if type(p) == NoisyLinear or type(p) == NoisyFactorizedLinear:
+                    self.logger.log("parameters/feature_extractor_L{}_avg_noisy".format(idx), p.sigma_weight.mean().item())
 
-        #     for idx, p in enumerate(self.model.advantage_net.modules()): 
-        #         if type(p) == NoisyLinear or type(p) == NoisyFactorizedLinear:
-        #             self.logger.log("parameters/advantage_L{}_avg_noisy".format(idx), p.sigma_weight.mean().item())
+            for idx, p in enumerate(self.model.advantage_net.modules()): 
+                if type(p) == NoisyLinear or type(p) == NoisyFactorizedLinear:
+                    self.logger.log("parameters/advantage_L{}_avg_noisy".format(idx), p.sigma_weight.mean().item())
 
-        #     for idx, p in enumerate(self.model.value_net.modules()): 
-        #         if type(p) == NoisyLinear or type(p) == NoisyFactorizedLinear:
-        #             self.logger.log("parameters/value_L{}_avg_noisy".format(idx), p.sigma_weight.mean().item())
+            for idx, p in enumerate(self.model.value_net.modules()): 
+                if type(p) == NoisyLinear or type(p) == NoisyFactorizedLinear:
+                    self.logger.log("parameters/value_L{}_avg_noisy".format(idx), p.sigma_weight.mean().item())
         super().endEpisode()        
