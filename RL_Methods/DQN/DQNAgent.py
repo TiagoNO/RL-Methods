@@ -88,7 +88,8 @@ class DQNAgent(Agent):
         self.model.train(True)
         self.model.optimizer.zero_grad()
         loss = self.calculate_loss()
-        # self.logger.log("train/loss", loss.item())
+        if not self.logger is None:
+            self.logger.log("train/loss", loss.item())
 
         loss.backward()
         th.nn.utils.clip_grad_norm_(self.model.parameters(), self.parameters['grad_norm_clip'])
