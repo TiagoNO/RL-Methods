@@ -77,7 +77,7 @@ class DistributionalDQNAgent(DQNAgent):
         batch_size = len(rewards)
         projection = th.zeros((batch_size, self.model.n_atoms), dtype=th.float32)
 
-        atoms = (~dones.unsqueeze(1) * (self.parameters['gamma']**self.parameters['trajectory_steps']) * self.model.support_vector.unsqueeze(0).to('cpu'))
+        atoms = (~dones.unsqueeze(1) * self.parameters['gamma'] * self.model.support_vector.unsqueeze(0).to('cpu'))
         tz = th.clip(rewards.unsqueeze(1) + atoms, self.model.min_v, self.model.max_v)
         b = (tz - self.model.min_v) / self.model.delta
         low = th.floor(b).long()
