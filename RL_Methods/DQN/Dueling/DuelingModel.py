@@ -62,25 +62,30 @@ class DuelingModel(DQNModel):
         return feature_extractor.float().to(device), value_net.float().to(device), advantage_net.float().to(device)
 
     def forward(self, state):
-        return self.q_values(state)
-
-    def q_values(self, state):
         features = self.features_extractor(state)
         advantage = self.advantage_net(features)
         value = self.value_net(features)
+        return advantage, value
+
+    def target_forward(self, state):
+        with th.no_grad():
+            features = self.target_features_extractor(state)
+            advantage = self.target_advantage_net(features)
+            value = self.target_value_net(features)
+            return advantage, value
+
+    def q_values(self, state):
+        advantage, value = self.forward(state)
         return value + (advantage - th.mean(advantage))
 
     def q_target(self, state):
-        features = self.target_features_extractor(state)
-        advantage = self.target_advantage_net(features)
-        value = self.target_value_net(features)
+        advantage, value = self.target_forward(state)
         return value + (advantage - th.mean(advantage))
 
     def __str__(self) -> str:
         features = torchinfo.summary(self.features_extractor, self.input_dim, device=self.device).__str__()
         value = torchinfo.summary(self.value_net, 128, device=self.device).__str__()
         advantage = torchinfo.summary(self.advantage_net, 128, device=self.device).__str__()
-
         return features + value + advantage
 
     def sync(self):
@@ -88,6 +93,7 @@ class DuelingModel(DQNModel):
         self.target_features_extractor.load_state_dict(self.features_extractor.state_dict())
         self.target_advantage_net.load_state_dict(self.advantage_net.state_dict())
         self.target_value_net.load_state_dict(self.value_net.state_dict())
+        print(self.target_advantage_net)
 
     def save(self, file):
         th.save(self.features_extractor.state_dict(), file + "_feature_extractor.pt")

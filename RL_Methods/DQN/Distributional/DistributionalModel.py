@@ -37,15 +37,20 @@ class DistributionalModel(DQNModel):
         batch_sz = state.shape[0]
         return self.q_net(state).view(batch_sz, self.action_dim, self.n_atoms)
 
+    def target_forward(self, state):
+        batch_sz = state.shape[0]
+        with th.no_grad():
+            return self.target_net(state).view(batch_sz, self.action_dim, self.n_atoms)
+
+
     def q_values(self, state):
-        values = self(state)
+        values = self.forward(state)
         probs = self.softmax(values)
         q_values = th.mul(probs, self.support_vector).sum(dim=2)
         return q_values, values
 
     def q_target(self, state):
-        batch_sz = state.shape[0]
-        values = self.target_net(state).view(batch_sz, self.action_dim, self.n_atoms)
+        values = self.target_forward(state)
         probs = self.softmax(values)
         q_values = th.mul(probs, self.support_vector).sum(dim=2)
         return q_values, values

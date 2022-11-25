@@ -59,9 +59,19 @@ class RainbowModel(DuelingModel):
         value_atoms = self.value_net(features).view(batch_sz, self.n_atoms)
         return advantage_atoms, value_atoms
 
+    def target_forward(self, state):
+        batch_sz = state.shape[0]
+        with th.no_grad():
+            features = self.target_features_extractor(state)
+            advantage_atoms = self.target_advantage_net(features).view(batch_sz, self.action_dim, self.n_atoms)
+            value_atoms = self.target_value_net(features).view(batch_sz, self.n_atoms)
+            return advantage_atoms, value_atoms
+
+
     def q_values(self, state):
         batch_sz = state.shape[0]
-        advantage_atoms, value_atoms = self(state)
+        advantage_atoms, value_atoms = self.forward(state)
+        
         advantage_atoms = advantage_atoms - th.mean(advantage_atoms, dim=1).unsqueeze(1)
         advantage_atoms[range(batch_sz)] += value_atoms.unsqueeze(1)
         probs = self.softmax(advantage_atoms)
@@ -70,9 +80,7 @@ class RainbowModel(DuelingModel):
 
     def q_target(self, state):
         batch_sz = state.shape[0]
-        features = self.target_features_extractor(state)
-        advantage_atoms = self.target_advantage_net(features).view(batch_sz, self.action_dim, self.n_atoms)
-        value_atoms = self.target_value_net(features).view(batch_sz, self.n_atoms)
+        advantage_atoms, value_atoms = self.target_forward(state)
 
         advantage_atoms = advantage_atoms - th.mean(advantage_atoms, dim=1).unsqueeze(1)
         advantage_atoms[range(batch_sz)] += value_atoms.unsqueeze(1)
