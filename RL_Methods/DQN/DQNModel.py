@@ -62,13 +62,17 @@ class DQNModel(nn.Module):
         return torchinfo.summary(self.q_net, self.input_dim, device=self.device).__str__()
 
     def forward(self, state):
-        return self.q_values(state)
-
-    def q_values(self, state):
         return self.q_net(state)
 
+    def target_forward(self, state):
+        with th.no_grad():
+            return self.target_net(state)
+
+    def q_values(self, state):
+        return self.forward(state)
+
     def q_target(self, state):
-        return self.target_net(state)
+        return self.target_forward(state)
 
     def sync(self):
         print("Sync target network...")
