@@ -26,7 +26,7 @@ class NoisyNetDQNAgent(DQNAgent):
                     save_log_every=100,
                     device='cpu',
                     epsilon=None,
-                    debug=False
+                    verbose=0
                 ):
         if epsilon is None:
             epsilon=LinearSchedule(0.1, -1e-4, 0.0)
@@ -49,7 +49,7 @@ class NoisyNetDQNAgent(DQNAgent):
                         log_freq=log_freq,
                         save_log_every=save_log_every,
                         device=device,
-                        debug=debug
+                        verbose=verbose
                         )
 
         self.parameters['sigma_init'] = sigma_init
