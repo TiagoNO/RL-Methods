@@ -93,7 +93,6 @@ class DuelingModel(DQNModel):
         self.target_features_extractor.load_state_dict(self.features_extractor.state_dict())
         self.target_advantage_net.load_state_dict(self.advantage_net.state_dict())
         self.target_value_net.load_state_dict(self.value_net.state_dict())
-        print(self.target_advantage_net)
 
     def save(self, file):
         th.save(self.features_extractor.state_dict(), file + "_feature_extractor.pt")
