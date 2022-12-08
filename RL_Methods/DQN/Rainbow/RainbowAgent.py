@@ -118,6 +118,15 @@ class RainbowAgent(DQNAgent):
         offset = th.linspace(0, ((batch_size - 1) * self.model.n_atoms), batch_size, device=self.model.device).unsqueeze(1).expand(batch_size, self.model.n_atoms)
         projection.view(-1).index_add_(0, (low + offset).view(-1).long(), (distrib * (upper.float() - b)).view(-1))
         projection.view(-1).index_add_(0, (upper + offset).view(-1).long(), (distrib * (b - low.float())).view(-1))
+
+        # freeing the cuda memory
+        del low
+        del upper
+        del b
+        del tz
+        del atoms
+        del offset
+
         return projection
 
 

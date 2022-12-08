@@ -114,7 +114,8 @@ class DQNAgent(Agent):
         model_file = "{}/{}".format(directory, prefix)
         parameters_file = "{}/{}_parameters".format(directory, prefix)
         buffer_file = "{}/{}_buffer".format(directory, prefix)
-
+        callback_file = "{}/{}_callback".format(directory, prefix)
+    
         self.model.save(model_file)
         params_f_ptr = open(parameters_file, "wb")
         pickle.dump(self.parameters, params_f_ptr)
@@ -124,6 +125,10 @@ class DQNAgent(Agent):
             buffer_f_ptr = open(buffer_file, "wb")
             pickle.dump(self.exp_buffer, buffer_f_ptr)
             buffer_f_ptr.close()
+
+        callback_f_ptr = open(callback_file, "wb")
+        pickle.dump(self.callbacks, callback_f_ptr)
+        callback_f_ptr.close()
 
         zip_files(directory, directory)
         for files in os.listdir(directory):
@@ -141,11 +146,17 @@ class DQNAgent(Agent):
         model_file = "{}/{}".format(directory, prefix)
         parameters_file = "{}/{}_parameters".format(directory, prefix)
         buffer_file = "{}/{}_buffer".format(directory, prefix)
+        callback_file = "{}/{}_callback".format(directory, prefix)
 
         parameters_f_ptr = open(parameters_file, "rb")
         print(parameters_file)
         parameters = dict(pickle.load(parameters_f_ptr))
         parameters_f_ptr.close()
+
+        if callback is None:
+            callback_f_ptr = open(callback_file, "rb")
+            callback = pickle.load(callback_f_ptr)
+            callback_f_ptr.close()
 
         try:
             num_episodes = parameters.pop('num_episodes')
