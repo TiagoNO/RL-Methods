@@ -1,4 +1,5 @@
 import os
+import numpy as np
 
 class Callback:
 
@@ -55,6 +56,24 @@ class ListCallback(Callback):
     def update(self):
         for callback in self.list:
             callback.update()
+
+class AgentStatisticsCallback(Callback):
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.scores = []
+        self.ep_scores = []
+
+    def update(self):
+        self.scores.append(self.agent.data['reward'])
+
+    def endEpisode(self):
+        score =  np.sum(self.scores)
+        self.ep_scores.append(score)
+        self.agent.logger.log("train/avg_ep_rewards", np.mean(self.ep_scores[-50:]))
+        self.agent.logger.update("train/ep_score", score)
+        self.scores.clear()
+
 
 
 class CheckpointCallback (Callback):
