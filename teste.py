@@ -76,7 +76,7 @@ if __name__ == '__main__':
     checkpoint_freq = 5000
     log_freq = 1
     arch = {'net_arch':[64, 64], 'activation_fn':th.nn.ReLU}
-    dueling_arch = {'feature_arch':[64, 64], 'value_arch':[32], 'advantage_arch':[32], 'activation_fn':th.nn.ReLU}
+    dueling_arch = {'feature_arch':[64], 'value_arch':[64], 'advantage_arch':[64], 'activation_fn':th.nn.ReLU}
     device = "cuda" if th.cuda.is_available() else "cpu"
 
     env = gym.make(env_name)
