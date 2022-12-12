@@ -2,12 +2,16 @@ import os
 import time
 class Logger:
 
-    def __init__(self, log_filename) -> None:        
-        self.directory = log_filename[:log_filename.rfind("/")+1]
-        self.filename = log_filename[log_filename.rfind("/")+1:] + ".log"
+    def __init__(self, log_filename : str = None) -> None:        
 
-        if not os.path.isdir(self.directory):
-            os.makedirs(self.directory)
+        if log_filename is None:
+            self.dump_to_file = False
+        else:
+            self.directory = log_filename[:log_filename.rfind("/")+1]
+            self.filename = log_filename[log_filename.rfind("/")+1:] + ".log"
+            self.dump_to_file = True
+            if not os.path.isdir(self.directory):
+                os.makedirs(self.directory)
 
         self.data = {}
         self.tabs_exp = 55
@@ -38,13 +42,14 @@ class Logger:
         print("|" + "=" * (self.tabs_exp-1) + "|")
 
     def dump(self):
-        f = open(self.directory + self.filename, 'a')
-        for key in self.data.keys():
-            f.write("{}:".format(key))
-            for v in self.data[key]:
-                f.write("{} ".format(v))
-            f.write("\n")
-        f.close()
+        if self.dump_to_file:
+            f = open(self.directory + self.filename, 'a')
+            for key in self.data.keys():
+                f.write("{}:".format(key))
+                for v in self.data[key]:
+                    f.write("{} ".format(v))
+                f.write("\n")
+            f.close()
         self.clear()
 
     def retrieve(self, filename=None):
