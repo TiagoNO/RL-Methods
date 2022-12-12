@@ -10,7 +10,10 @@ from RL_Methods.utils.Schedule import Schedule
 class Agent:
 
     def __init__(self, callbacks : Callback = None, logger : Logger = None, log_freq:int=1, save_log_every:int=100, verbose:int=0) -> None:
-        self.logger = logger
+        if logger is None:
+            self.logger = Logger(None)
+        else:
+            self.logger = logger
 
         if callbacks is None:
             self.callbacks = AgentStatisticsCallback()
@@ -111,32 +114,25 @@ class Agent:
         self.logger.dump()
 
     def test(self, env, n_episodes):
-        pass
-        # self.total_test_episodes = n_episodes
-        # self.num_test_episodes = 0
+        self.total_test_episodes = n_episodes
+        self.num_test_episodes = 0
 
-        # self.test_scores = np.zeros(n_episodes, dtype=np.float32)
+        self.test_scores = np.zeros(n_episodes, dtype=np.float32)
 
-        # for self.num_test_episodes in range(self.total_test_episodes):
-        #     obs = env.reset()
-        #     done = False
-        #     action_mask = None
-        #     score = 0
-        #     while not done:
-        #         action = self.getAction(obs, deterministic=True, mask=action_mask)
-        #         obs, reward, done, info = env.step(action)
-        #         if 'mask' in info:
-        #             action_mask = info['mask']
+        for self.num_test_episodes in range(self.total_test_episodes):
+            obs = env.reset()
+            done = False
+            action_mask = None
+            score = 0
+            while not done:
+                action = self.getAction(obs, deterministic=True, mask=action_mask)
+                obs, reward, done, info = env.step(action)
+                if 'mask' in info:
+                    action_mask = info['mask']
 
-        #         score += reward
-        #         env.render()   
-        #     self.test_scores[self.num_test_episodes] = score
-        #     print("|" + "=" * 44 + "|")
-        #     print("|{}\t|".format(self.__class__.__name__).expandtabs(45))
-        #     print("|Episode {}/{}\t|".format(self.num_test_episodes+1, self.total_test_episodes).expandtabs(45))
-        #     print("|Episode Score {}\t|".format(score).expandtabs(45))
-        #     print("|Avg score {}\t|".format(round(np.mean(self.test_scores[0:self.num_test_episodes+1]), 2)).expandtabs(45))
-        #     print("|" + "=" * 44 + "|")
+                score += reward
+                env.render()   
+            self.test_scores[self.num_test_episodes] = score
 
     def save(self, filename):
         pass
