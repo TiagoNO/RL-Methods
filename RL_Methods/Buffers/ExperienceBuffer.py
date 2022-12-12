@@ -3,12 +3,13 @@ import numpy as np
 
 class ExperienceSamples:
 
-    def __init__(self, states, actions, rewards, dones, next_states, device):
+    def __init__(self, states, actions, rewards, dones, next_states, indices, device):
         self.states = th.from_numpy(states).to(device)
         self.actions = th.from_numpy(actions).to(device)
         self.rewards = th.from_numpy(rewards).to(device)
         self.dones = th.from_numpy(dones).to(device)
         self.next_states = th.from_numpy(next_states).to(device)
+        self.indices = th.from_numpy(indices).to(device)
         self.size = len(rewards)
 
 class ExperienceBuffer:
@@ -35,7 +36,7 @@ class ExperienceBuffer:
     def sample(self, batch_sz):
         sample_sz = min(self.curr_sz, batch_sz)
         indices = np.random.choice(self.curr_sz, sample_sz, replace=False)
-        return ExperienceSamples(self.obs[indices], self.actions[indices], self.rewards[indices], self.dones[indices], self.obs_[indices], self.device)
+        return ExperienceSamples(self.obs[indices], self.actions[indices], self.rewards[indices], self.dones[indices], self.obs_[indices], indices, self.device)
 
     def __len__(self):
         return self.curr_sz

@@ -4,8 +4,7 @@ from RL_Methods.Buffers.ExperienceBuffer import *
 
 class PrioritizedExperienceSamples(ExperienceSamples):
     def __init__(self, states, actions, rewards, dones, next_states, indices, weights, device):
-        super().__init__(states, actions, rewards, dones, next_states, device)
-        self.indices = th.from_numpy(indices).to(device)
+        super().__init__(states, actions, rewards, dones, next_states, indices, device)
         self.weights = th.from_numpy(weights).to(device)
 
 class PrioritizedReplayBuffer(ExperienceBuffer):
