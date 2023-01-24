@@ -153,10 +153,13 @@ class DQNAgent(Agent):
         parameters = dict(pickle.load(parameters_f_ptr))
         parameters_f_ptr.close()
 
-        if callback is None:
-            callback_f_ptr = open(callback_file, "rb")
-            callback = pickle.load(callback_f_ptr)
-            callback_f_ptr.close()
+        try:
+            if callback is None:
+                callback_f_ptr = open(callback_file, "rb")
+                callback = pickle.load(callback_f_ptr)
+                callback_f_ptr.close()
+        except Exception as e:
+            print("Could not load callbacks: {}".format(e))
 
         try:
             num_episodes = parameters.pop('num_episodes')
@@ -181,8 +184,8 @@ class DQNAgent(Agent):
                 agent.exp_buffer = pickle.load(open(buffer_file, "rb"))
                 agent.exp_buffer.device = device
                 buffer_f_ptr.close()
-        except:
-            print("Could not load exp buffer...")
+        except Exception as e:
+            print("Could not load exp buffer: {}".format(e))
 
         for files in os.listdir(directory):
             os.remove(os.path.join(directory, files))
