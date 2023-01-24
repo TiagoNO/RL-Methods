@@ -49,8 +49,8 @@ class MultiStepDQNAgent(DQNAgent):
         self.trajectory = []
         self.parameters['trajectory_steps'] = trajectory_steps
 
-    def beginEpisode(self, state):
-        for _ in range(len(self.trajectory)):
+    def beginEpisode(self):
+        while(len(self.trajectory) > 0):
             state, action, reward, done, next_state = self.getTrajectory()
             self.exp_buffer.add(state, action, reward, done, next_state)
             self.trajectory.pop(0)

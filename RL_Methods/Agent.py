@@ -48,7 +48,7 @@ class Agent:
     def endTrainning(self):
         pass
 
-    def beginEpisode(self, state):
+    def beginEpisode(self):
         pass
 
     def endEpisode(self):
@@ -79,7 +79,7 @@ class Agent:
             done = False
             action_mask = None
             score = 0
-            self.beginEpisode(obs)
+            self.beginEpisode()
             self.callbacks.beginEpisode()
             while not done:
                 action = self.getAction(obs, mask=action_mask)
