@@ -9,7 +9,7 @@ from RL_Methods.utils.Schedule import Schedule
 
 class Agent:
 
-    def __init__(self, callbacks : Callback = None, logger : Logger = None, log_freq:int=1, save_log_every:int=100, verbose:int=0) -> None:
+    def __init__(self, callbacks : Callback = None, logger : Logger = None, save_log_every:int=100, verbose:int=0) -> None:
         if logger is None:
             self.logger = Logger(None)
         else:
@@ -21,7 +21,6 @@ class Agent:
             self.callbacks = ListCallback([AgentStatisticsCallback(), callbacks])
 
         self.parameters = {}
-        self.parameters['log_freq'] = log_freq
         self.parameters['save_log_every'] = save_log_every
         self.parameters['verbose'] = verbose
         self.parameters['num_timesteps'] = 0
@@ -35,6 +34,9 @@ class Agent:
             'next_state':None,
             'info':None,
         }
+
+    def log(self, name, value):
+        self.logger.log(name, value)
 
     def __str__(self) -> str:
         params = "{}:\n".format(self.__class__.__name__)
@@ -52,12 +54,11 @@ class Agent:
         pass
 
     def endEpisode(self):
-        if not self.logger is None:
-            self.logger.log("train/timesteps", self.parameters['num_timesteps'])
-            self.logger.log("train/episodes", self.parameters['num_episodes'])
-            self.logger.print()
-            if self.parameters['num_episodes'] % self.parameters['save_log_every'] == 0:
-                self.logger.dump()
+        self.log("train/episodes", self.parameters['num_episodes'])
+        self.log("train/timesteps", self.parameters['num_timesteps'])
+        self.logger.print()
+        if self.parameters['num_episodes'] % self.parameters['save_log_every'] == 0:
+            self.logger.dump()
 
     def update(self, state, action, reward, done, next_state, info):
         pass

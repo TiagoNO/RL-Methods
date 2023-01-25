@@ -16,28 +16,26 @@ from RL_Methods.utils.Common import unzip_files, zip_files
 class DQNAgent(Agent):
 
     def __init__(self,
-                    input_dim : gym.Space, 
-                    action_dim : gym.Space, 
+                    input_dim : tuple, 
+                    action_dim : int, 
                     learning_rate : Schedule,
                     epsilon : Schedule,
                     gamma : float, 
                     batch_size : int, 
                     experience_buffer_size : int,
                     target_network_sync_freq : int, 
-                    grad_norm_clip:float = 1,
-                    architecture=None,
+                    grad_norm_clip: float = 1,
+                    architecture: dict = None,
                     callbacks: Callback = None,
                     logger: Logger = None,
-                    log_freq: int = 1,
-                    save_log_every=100,
-                    device='cpu',
-                    verbose=0
+                    save_log_every: int = 100,
+                    device: str = 'cpu',
+                    verbose: int = 0
                 ):        
 
         super(DQNAgent, self).__init__(
             callbacks=callbacks, 
             logger=logger, 
-            log_freq=log_freq, 
             save_log_every=save_log_every,
             verbose=verbose
             )
@@ -55,6 +53,9 @@ class DQNAgent(Agent):
 
         self.model = DQNModel(input_dim, action_dim, learning_rate, architecture, device)
         self.exp_buffer = ExperienceBuffer(experience_buffer_size, input_dim, device)      
+
+        self.loss_mean = 0
+        self.loss_count = 0
 
         if not self.callbacks is None:
             self.callbacks.set_agent(self)
@@ -88,8 +89,8 @@ class DQNAgent(Agent):
         self.model.train(True)
         self.model.optimizer.zero_grad()
         loss = self.calculate_loss()
-        if not self.logger is None:
-            self.logger.log("train/loss", loss.item())
+        self.loss_mean += loss
+        self.loss_count += 1
 
         loss.backward()
         th.nn.utils.clip_grad_norm_(self.model.parameters(), self.parameters['grad_norm_clip'])
@@ -149,7 +150,6 @@ class DQNAgent(Agent):
         callback_file = "{}/{}_callback".format(directory, prefix)
 
         parameters_f_ptr = open(parameters_file, "rb")
-        print(parameters_file)
         parameters = dict(pickle.load(parameters_f_ptr))
         parameters_f_ptr.close()
 
@@ -202,7 +202,12 @@ class DQNAgent(Agent):
 
 
     def endEpisode(self):
-        if not self.logger is None:
-            self.logger.log("parameters/learning_rate", self.parameters['learning_rate'].get())
-            self.logger.log("parameters/epsilon", self.parameters['epsilon'].get())
+        self.log("parameters/learning_rate", self.parameters['learning_rate'].get())
+        self.log("parameters/epsilon", self.parameters['epsilon'].get())
+        if(self.loss_count > 0):
+            self.log("train/loss_mean", self.loss_mean / self.loss_count)
+
+        self.loss_mean = 0
+        self.loss_count = 0
+
         super().endEpisode()

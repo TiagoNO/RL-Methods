@@ -19,7 +19,6 @@ class DoubleDQNAgent(DQNAgent):
                     architecture=None,
                     callbacks: Callback = None,
                     logger: Logger = None,
-                    log_freq: int = 1,
                     save_log_every=100,
                     device='cpu',
                     verbose=0
@@ -37,7 +36,6 @@ class DoubleDQNAgent(DQNAgent):
                         architecture=architecture,
                         callbacks=callbacks,
                         logger=logger,
-                        log_freq=log_freq,
                         save_log_every=save_log_every,
                         device=device,
                         verbose=verbose

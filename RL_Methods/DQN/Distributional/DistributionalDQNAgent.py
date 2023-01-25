@@ -3,7 +3,7 @@ import numpy as np
 
 from RL_Methods.DQN.DQNAgent import DQNAgent
 from RL_Methods.DQN.Distributional.DistributionalModel import DistributionalModel
-
+from RL_Methods.utils.Schedule import Schedule
 from RL_Methods.utils.Callback import Callback
 from RL_Methods.utils.Logger import Logger
 
@@ -19,17 +19,16 @@ class DistributionalDQNAgent(DQNAgent):
                     batch_size, 
                     experience_buffer_size, 
                     target_network_sync_freq,
-                    n_atoms,
-                    min_value,
-                    max_value,
-                    architecture,
-                    grad_norm_clip=1,
+                    n_atoms: int,
+                    min_value: float,
+                    max_value: float,
+                    architecture=None,
+                    grad_norm_clip = 1,
                     callbacks: Callback = None,
                     logger: Logger = None,
-                    log_freq: int = 1,
-                    save_log_every=100,
-                    device='cpu',
-                    verbose=0
+                    save_log_every: int = 100,
+                    device: str = 'cpu',
+                    verbose: int = 0
                 ):
         super().__init__(
                         input_dim=input_dim, 
@@ -44,7 +43,6 @@ class DistributionalDQNAgent(DQNAgent):
                         architecture=architecture,
                         callbacks=callbacks,
                         logger=logger,
-                        log_freq=log_freq,
                         save_log_every=save_log_every,
                         device=device,
                         verbose=verbose

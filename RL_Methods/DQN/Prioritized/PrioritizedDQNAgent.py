@@ -10,24 +10,23 @@ import time
 class PrioritizedDQNAgent(DQNAgent):
 
     def __init__(self, 
-                    input_dim, 
-                    action_dim, 
-                    learning_rate,
-                    epsilon,
-                    gamma, 
-                    batch_size, 
-                    experience_buffer_size, 
-                    target_network_sync_freq, 
-                    experience_prob_alpha, 
+                    input_dim: tuple, 
+                    action_dim: int, 
+                    learning_rate: Schedule,
+                    epsilon: Schedule,
+                    gamma: float, 
+                    batch_size: int, 
+                    experience_buffer_size: int, 
+                    target_network_sync_freq: int, 
+                    experience_prob_alpha: float, 
                     experience_beta : Schedule, 
-                    grad_norm_clip=1,
-                    architecture=None,
+                    grad_norm_clip: float = 1,
+                    architecture:dict = None,
                     callbacks: Callback = None,
                     logger: Logger = None,
-                    log_freq: int = 1,
-                    save_log_every=100,
-                    device='cpu',
-                    verbose=0
+                    save_log_every: int = 100,
+                    device: str = 'cpu',
+                    verbose : int = 0
                     ):
         super().__init__(
                         input_dim=input_dim, 
@@ -42,10 +41,9 @@ class PrioritizedDQNAgent(DQNAgent):
                         architecture=architecture,
                         callbacks=callbacks,
                         logger=logger,
-                        log_freq=log_freq,
                         save_log_every=save_log_every,
                         device=device,
-                        verbose=0
+                        verbose=verbose
                         )
         self.parameters['experience_beta'] = experience_beta
         self.parameters['experience_prob_alpha'] = experience_prob_alpha
@@ -72,8 +70,8 @@ class PrioritizedDQNAgent(DQNAgent):
         return loss.mean()
 
     def endEpisode(self):
-        self.logger.log("parameters/beta", self.parameters['experience_beta'].get())
-        self.logger.log("time/sample_time", self.sample_time / self.count)
+        self.log("parameters/beta", self.parameters['experience_beta'].get())
+        self.log("time/sample_time", self.sample_time / self.count)
         self.sample_time = 0
         self.count = 1
         super().endEpisode()

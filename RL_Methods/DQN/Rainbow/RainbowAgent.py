@@ -13,29 +13,28 @@ from RL_Methods.utils.Schedule import LinearSchedule, Schedule
 class RainbowAgent(DQNAgent):
 
     def __init__(self, 
-                    input_dim, 
-                    action_dim, 
+                    input_dim: tuple, 
+                    action_dim: int, 
                     learning_rate : Schedule,
-                    gamma, 
-                    batch_size, 
-                    experience_buffer_size, 
-                    target_network_sync_freq,
-                    experience_prob_alpha, 
-                    experience_beta : Schedule, 
-                    trajectory_steps,
-                    sigma_init,
-                    n_atoms,
-                    min_value,
-                    max_value,
-                    grad_norm_clip=1,
-                    architecture=None,
+                    gamma: float, 
+                    batch_size: int, 
+                    experience_buffer_size: int, 
+                    target_network_sync_freq: int,
+                    experience_prob_alpha: float, 
+                    experience_beta: Schedule, 
+                    trajectory_steps: int,
+                    sigma_init: float,
+                    n_atoms: int,
+                    min_value: float,
+                    max_value: float,
+                    grad_norm_clip: float = 1,
+                    architecture: dict = None,
                     callbacks: Callback = None,
                     logger: Logger = None,
-                    log_freq: int = 1,
-                    save_log_every=100,
-                    device='cpu',
-                    epsilon=None,
-                    verbose=0
+                    save_log_every: int = 100,
+                    device: str = 'cpu',
+                    epsilon: Schedule = None,
+                    verbose: int = 0
                     ):
 
         if epsilon is None:
@@ -56,7 +55,6 @@ class RainbowAgent(DQNAgent):
                         architecture=None,
                         callbacks=callbacks,
                         logger=logger,
-                        log_freq=log_freq,
                         save_log_every=save_log_every,
                         device=device,
                         verbose=verbose
@@ -160,17 +158,17 @@ class RainbowAgent(DQNAgent):
         self.trajectory.append([state, action, reward, done, next_state])
 
     def endEpisode(self):
-        if not self.logger is None and self.parameters['verbose'] >= 1:
-            self.logger.log("parameters/beta", self.parameters['experience_beta'].get())
+        if self.parameters['verbose'] >= 1:
+            self.log("parameters/beta", self.parameters['experience_beta'].get())
             for idx, p in enumerate(self.model.features_extractor.modules()): 
                 if type(p) == NoisyLinear or type(p) == NoisyFactorizedLinear:
-                    self.logger.log("parameters/feature_extractor_L{}_avg_noisy".format(idx), p.sigma_weight.mean().item())
+                    self.log("parameters/feature_extractor_L{}_avg_noisy".format(idx), p.sigma_weight.mean().item())
 
             for idx, p in enumerate(self.model.advantage_net.modules()): 
                 if type(p) == NoisyLinear or type(p) == NoisyFactorizedLinear:
-                    self.logger.log("parameters/advantage_L{}_avg_noisy".format(idx), p.sigma_weight.mean().item())
+                    self.log("parameters/advantage_L{}_avg_noisy".format(idx), p.sigma_weight.mean().item())
 
             for idx, p in enumerate(self.model.value_net.modules()): 
                 if type(p) == NoisyLinear or type(p) == NoisyFactorizedLinear:
-                    self.logger.log("parameters/value_L{}_avg_noisy".format(idx), p.sigma_weight.mean().item())
+                    self.log("parameters/value_L{}_avg_noisy".format(idx), p.sigma_weight.mean().item())
         super().endEpisode()        

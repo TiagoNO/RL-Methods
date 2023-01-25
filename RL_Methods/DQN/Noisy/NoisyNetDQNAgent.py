@@ -22,7 +22,6 @@ class NoisyNetDQNAgent(DQNAgent):
                     architecture=None,
                     callbacks: Callback = None,
                     logger: Logger = None,
-                    log_freq: int = 1,
                     save_log_every=100,
                     device='cpu',
                     epsilon=None,
@@ -46,7 +45,6 @@ class NoisyNetDQNAgent(DQNAgent):
                         architecture=architecture,
                         callbacks=callbacks,
                         logger=logger,
-                        log_freq=log_freq,
                         save_log_every=save_log_every,
                         device=device,
                         verbose=verbose
@@ -58,5 +56,5 @@ class NoisyNetDQNAgent(DQNAgent):
     def endEpisode(self):
         for idx, p in enumerate(self.model.q_net.modules()): 
             if type(p) == NoisyLinear or type(p) == NoisyFactorizedLinear:
-                self.logger.log("parameters/layer_{}_avg_noisy".format(idx), p.sigma_weight.mean().item())
+                self.log("parameters/layer_{}_avg_noisy".format(idx), p.sigma_weight.mean().item())
         super().endEpisode()
