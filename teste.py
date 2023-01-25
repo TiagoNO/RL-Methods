@@ -93,7 +93,7 @@ if __name__ == '__main__':
                         architecture=arch,
                         callbacks=CheckpointCallback("experiments/dqn/", "dqn", checkpoint_freq),
                         logger=Logger("experiments/dqn/log_file"),
-                        log_freq=10,
+                        
                         device=device,
                         verbose=3
                         )
@@ -116,7 +116,7 @@ if __name__ == '__main__':
                         architecture=arch,
                         callbacks=CheckpointCallback("experiments/double/", "dqn", checkpoint_freq),
                         logger=Logger("experiments/double/log_file"),
-                        log_freq=10,
+                        
                         device=device,
                         verbose=3
                         )
@@ -142,7 +142,7 @@ if __name__ == '__main__':
                         architecture=arch,
                         callbacks=CheckpointCallback("experiments/prioritized/", "dqn", checkpoint_freq),
                         logger=Logger("experiments/prioritized/log_file"),
-                        log_freq=10,
+                        
                         device=device,
                         verbose=3
                         )
@@ -165,7 +165,7 @@ if __name__ == '__main__':
                         architecture=dueling_arch,
                         callbacks=CheckpointCallback("experiments/dueling/", "dqn", checkpoint_freq),
                         logger=Logger("experiments/dueling/log_file"),
-                        log_freq=10,
+                        
                         device=device,
                         verbose=3
                         )
@@ -189,7 +189,7 @@ if __name__ == '__main__':
                         architecture=arch,
                         callbacks=CheckpointCallback("experiments/multistep/", "dqn", checkpoint_freq),
                         logger=Logger("experiments/multistep/log_file"),
-                        log_freq=10,
+                        
                         device=device,
                         verbose=3
                         )
@@ -212,7 +212,7 @@ if __name__ == '__main__':
                         architecture=arch,
                         callbacks=CheckpointCallback("experiments/noisy/", "dqn", checkpoint_freq),
                         logger=Logger("experiments/noisy/log_file"),
-                        log_freq=10,
+                        
                         device=device,
                         verbose=3
                         )
@@ -238,7 +238,7 @@ if __name__ == '__main__':
                         architecture=arch,
                         callbacks=CheckpointCallback("experiments/distributional/", "dqn", checkpoint_freq),
                         logger=Logger("experiments/distributional/log_file"),
-                        log_freq=10,
+                        
                         device=device,
                         verbose=3
                         )
@@ -267,7 +267,7 @@ if __name__ == '__main__':
                         architecture=dueling_arch,
                         callbacks=CheckpointCallback("experiments/rainbow/", "rainbow", checkpoint_freq),
                         logger=Logger("experiments/rainbow/log_file"),
-                        log_freq=10,
+                        
                         device=device,
                         verbose=3
                         )
