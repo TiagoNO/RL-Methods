@@ -65,7 +65,7 @@ class DQNAgent(Agent):
             mask = np.ones(self.model.action_dim, dtype=bool)
 
         if np.random.rand() < self.parameters['epsilon'].get() and not deterministic:
-            prob = np.array(mask, dtype=np.float64) / np.sum(mask)
+            prob = np.array(mask, dtype=np.float32) / np.sum(mask)
             return np.random.choice(self.model.action_dim, 1, p=prob).item()
         else:
             state = th.from_numpy(state).to(self.model.device)
