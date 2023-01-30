@@ -62,10 +62,10 @@ class DQNAgent(Agent):
 
     def getAction(self, state, mask=None, deterministic=False) -> int:
         if mask is None:
-            mask = np.ones(self.model.action_dim, dtype=np.bool)
+            mask = np.ones(self.model.action_dim, dtype=bool)
 
         if np.random.rand() < self.parameters['epsilon'].get() and not deterministic:
-            prob = np.array(mask, dtype=np.float) / np.sum(mask)
+            prob = np.array(mask, dtype=np.float64) / np.sum(mask)
             return np.random.choice(self.model.action_dim, 1, p=prob).item()
         else:
             state = th.from_numpy(state).to(self.model.device)
@@ -89,7 +89,7 @@ class DQNAgent(Agent):
         self.model.train(True)
         self.model.optimizer.zero_grad()
         loss = self.calculate_loss()
-        self.loss_mean += loss
+        self.loss_mean += loss.item()
         self.loss_count += 1
 
         loss.backward()
