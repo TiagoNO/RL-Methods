@@ -15,11 +15,11 @@ class ExperienceSamples:
 class ExperienceBuffer:
     def __init__(self, max_sz, input_dim, device):
         self.max_sz = int(max_sz)
-        self.obs = np.zeros((self.max_sz, input_dim[0]), dtype=np.float32)
+        self.obs = np.zeros((self.max_sz, input_dim[0]), dtype=np.float64)
         self.actions = np.zeros(self.max_sz, dtype=np.int64)
-        self.rewards = np.zeros(self.max_sz, dtype=np.float32)
-        self.dones = np.zeros(self.max_sz, dtype=np.bool_)
-        self.obs_ = np.zeros((self.max_sz, input_dim[0]), dtype=np.float32)
+        self.rewards = np.zeros(self.max_sz, dtype=np.float64)
+        self.dones = np.zeros(self.max_sz, dtype=bool)
+        self.obs_ = np.zeros((self.max_sz, input_dim[0]), dtype=np.float64)
         self.pos = 0
         self.curr_sz = 0
         self.device = device

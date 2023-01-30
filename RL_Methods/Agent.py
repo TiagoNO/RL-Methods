@@ -118,7 +118,7 @@ class Agent:
         self.total_test_episodes = n_episodes
         self.num_test_episodes = 0
 
-        self.test_scores = np.zeros(n_episodes, dtype=np.float32)
+        self.test_scores = np.zeros(n_episodes, dtype=np.float64)
 
         for self.num_test_episodes in range(self.total_test_episodes):
             obs = env.reset()
