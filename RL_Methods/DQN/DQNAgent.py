@@ -1,5 +1,4 @@
 import os
-import gymnasium as gym
 import pickle
 import numpy as np
 import torch as th
@@ -191,7 +190,7 @@ class DQNAgent(Agent):
         os.removedirs(directory)
         return agent
 
-    def train(self, env : gym.Env, total_timesteps : int):
+    def train(self, env, total_timesteps : int):
         self.model.train()
         super().train(env, total_timesteps)
 
