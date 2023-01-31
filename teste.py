@@ -1,4 +1,4 @@
-import gym
+import gymnasium as gym
 from RL_Methods.DQN import DQNAgent
 from RL_Methods.DQN import DoubleDQNAgent
 from RL_Methods.DQN import PrioritizedDQNAgent
@@ -12,6 +12,7 @@ from RL_Methods.utils.Callback import CheckpointCallback
 from RL_Methods.utils.Logger import Logger
 
 from RL_Methods.utils.Schedule import LinearSchedule
+
 
 import torch as th
 
@@ -31,13 +32,11 @@ def generate_graph(filename, scores):
     plt.close()
 
 if __name__ == '__main__':
-    th.set_num_threads(5)
-    th.set_num_interop_threads(5)
 
     num_timesteps = 50000
     plot_every = 100
     debug_every = 100
-    env_name = "CartPole-v0"
+    env_name = "CartPole-v1"
     
     # DQN models parameters
     initial_epsilon = 1.0
@@ -98,7 +97,7 @@ if __name__ == '__main__':
                         verbose=3
                         )
     dqnAgent.train(env, num_timesteps)
-    generate_graph(dqnAgent.logger.directory + "scores", dqnAgent.data['scores'])
+    #generate_graph(dqnAgent.logger.directory + "scores", dqnAgent.data['scores'])
     del env
     del dqnAgent
 
@@ -121,7 +120,7 @@ if __name__ == '__main__':
                         verbose=3
                         )
     doubledqnAgent.train(env, num_timesteps)
-    generate_graph(doubledqnAgent.logger.directory + "scores", doubledqnAgent.data['scores'])
+    #generate_graph(doubledqnAgent.logger.directory + "scores", doubledqnAgent.data['scores'])
     del env
     del doubledqnAgent
 
@@ -147,7 +146,7 @@ if __name__ == '__main__':
                         verbose=3
                         )
     prioritizedDQNAgent.train(env, num_timesteps)
-    generate_graph(prioritizedDQNAgent.logger.directory + "scores", prioritizedDQNAgent.data['scores'])
+    #generate_graph(prioritizedDQNAgent.logger.directory + "scores", prioritizedDQNAgent.data['scores'])
     del env
     del prioritizedDQNAgent
     
@@ -170,7 +169,7 @@ if __name__ == '__main__':
                         verbose=3
                         )
     duelingDQNAgent.train(env, num_timesteps)
-    generate_graph(duelingDQNAgent.logger.directory + "scores", duelingDQNAgent.data['scores'])
+    #generate_graph(duelingDQNAgent.logger.directory + "scores", duelingDQNAgent.data['scores'])
     del env
     del duelingDQNAgent
 
@@ -194,7 +193,7 @@ if __name__ == '__main__':
                         verbose=3
                         )
     multistepDQNAgent.train(env, num_timesteps)
-    generate_graph(multistepDQNAgent.logger.directory + "scores", multistepDQNAgent.data['scores'])
+    #generate_graph(multistepDQNAgent.logger.directory + "scores", multistepDQNAgent.data['scores'])
     del env
     del multistepDQNAgent
 
@@ -217,7 +216,7 @@ if __name__ == '__main__':
                         verbose=3
                         )
     noisyDQNAgent.train(env, num_timesteps)
-    generate_graph(noisyDQNAgent.logger.directory + "scores", noisyDQNAgent.data['scores'])
+    #generate_graph(noisyDQNAgent.logger.directory + "scores", noisyDQNAgent.data['scores'])
     del env
     del noisyDQNAgent
 
@@ -243,7 +242,7 @@ if __name__ == '__main__':
                         verbose=3
                         )
     distributionalDQNAgent.train(env, num_timesteps)
-    generate_graph(distributionalDQNAgent.logger.directory + "scores", distributionalDQNAgent.data['scores'])
+    #generate_graph(distributionalDQNAgent.logger.directory + "scores", distributionalDQNAgent.data['scores'])
     del env
     del distributionalDQNAgent
 
@@ -272,7 +271,7 @@ if __name__ == '__main__':
                         verbose=3
                         )
     rainbowAgent.train(env, num_timesteps)
-    generate_graph(rainbowAgent.logger.directory + "scores", rainbowAgent.data['scores'])
+    #generate_graph(rainbowAgent.logger.directory + "scores", rainbowAgent.data['scores'])
     del env
     del rainbowAgent
     
