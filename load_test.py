@@ -1,4 +1,4 @@
-import gym
+import gymnasium as gym
 from RL_Methods.DQN import DQNAgent, Dueling, Noisy
 from RL_Methods.DQN import DoubleDQNAgent
 from RL_Methods.DQN import PrioritizedDQNAgent
