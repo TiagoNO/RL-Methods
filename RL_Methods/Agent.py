@@ -2,7 +2,7 @@ from distutils.log import Log
 import numpy as np
 from RL_Methods.utils.Callback import Callback, AgentStatisticsCallback, ListCallback
 from RL_Methods.utils.Logger import Logger
-import gym
+import gymnasium as gym
 import time
 
 from RL_Methods.utils.Schedule import Schedule

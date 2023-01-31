@@ -1,9 +1,8 @@
 import os
-import gym
+import gymnasium as gym
 import pickle
 import numpy as np
 import torch as th
-import time
 
 from RL_Methods.Agent import Agent
 from RL_Methods.DQN.DQNModel import DQNModel
