@@ -54,6 +54,7 @@ class DistributionalDQNAgent(DQNAgent):
 
     def calculate_loss(self):
         samples = self.exp_buffer.sample(self.parameters['batch_size'])
+        dones = th.bitwise_or(samples.terminated, samples.truncated)
 
         # calculating q_values distribution
         _, q_atoms = self.model.q_values(samples.states)
@@ -66,7 +67,7 @@ class DistributionalDQNAgent(DQNAgent):
             next_actions = th.argmax(next_q_values, dim=1)
             next_distrib = th.softmax(next_atoms, dim=2)
             next_best_distrib = next_distrib[range(samples.size), next_actions]
-            projection = self.project_operator(next_best_distrib.cpu(), samples.rewards.cpu(), samples.dones.cpu())
+            projection = self.project_operator(next_best_distrib.cpu(), samples.rewards.cpu(), dones.cpu())
 
         loss_v = (-state_log_prob * projection)
         return loss_v.sum(dim=1).mean()

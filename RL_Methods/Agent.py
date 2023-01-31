@@ -28,9 +28,11 @@ class Agent:
         self.data = {
             # curr data
             'state':None,
+            'start_info':None,
             'action':None,
             'reward':None,
-            'done':False,
+            'terminated':False,
+            'truncated':False,
             'next_state':None,
             'info':None,
         }
@@ -60,7 +62,7 @@ class Agent:
         if self.parameters['num_episodes'] % self.parameters['save_log_every'] == 0:
             self.logger.dump()
 
-    def update(self, state, action, reward, done, next_state, info):
+    def update(self, state, action, reward, terminated, truncated, next_state, info):
         pass
 
     def getAction(self, state, deterministic=True, mask=None):
@@ -76,25 +78,32 @@ class Agent:
         self.callbacks.beginTrainning()
         
         while self.parameters['num_timesteps'] < total_timesteps:
-            obs = env.reset()
+            obs, start_info = env.reset()
+
             done = False
             action_mask = None
             score = 0
+
+            self.data['state'] = obs
+            self.data['start_info'] = start_info
+
             self.beginEpisode()
             self.callbacks.beginEpisode()
             while not done:
                 action = self.getAction(obs, mask=action_mask)
-                obs_, reward, done, info = env.step(action)
+                obs_, reward, terminated, truncated, info = env.step(action)
+                done = (terminated or truncated)
                 self.learn()
                 
                 if 'mask' in info:
                     action_mask = info['mask']
 
-                self.update(obs, action, reward, done, obs_, info)
+                self.update(obs, action, reward, terminated, truncated, obs_, info)
                 self.data['state'] = obs
                 self.data['action'] = action
                 self.data['reward'] = reward
-                self.data['done'] = done
+                self.data['terminated'] = terminated
+                self.data['truncated'] = truncated
                 self.data['next_state'] = obs_
                 self.data['info'] = info
 

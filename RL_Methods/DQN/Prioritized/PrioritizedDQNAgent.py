@@ -1,5 +1,5 @@
 from RL_Methods.DQN.DQNAgent import DQNAgent
-from RL_Methods.Buffers.PrioritizedReplayBuffer import PrioritizedReplayBuffer, OptimizedPrioritizedReplayBuffer
+from RL_Methods.Buffers.PrioritizedReplayBuffer import PrioritizedReplayBuffer
 import torch as th
 
 from RL_Methods.utils.Callback import Callback
@@ -55,13 +55,15 @@ class PrioritizedDQNAgent(DQNAgent):
     def calculate_loss(self):
         begin = time.time()
         samples = self.exp_buffer.sample(self.parameters['batch_size'], self.parameters['experience_beta'].get())
+        dones = th.bitwise_or(samples.terminated, samples.truncated)
+
         self.sample_time += time.time() - begin
         self.count += 1
 
         states_action_values = self.model.q_values(samples.states).gather(1, samples.actions.unsqueeze(-1)).squeeze(-1)
         with th.no_grad():
             next_states_values = self.model.q_target(samples.next_states).max(1)[0]
-            expected_state_action_values = samples.rewards + ((~samples.dones) * self.parameters['gamma'] * next_states_values)
+            expected_state_action_values = samples.rewards + ((~dones) * self.parameters['gamma'] * next_states_values)
 
         loss = self.model.loss_func(states_action_values, expected_state_action_values)
         loss *= samples.weights

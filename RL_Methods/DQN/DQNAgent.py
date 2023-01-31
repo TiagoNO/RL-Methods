@@ -74,11 +74,12 @@ class DQNAgent(Agent):
 
     def calculate_loss(self) -> th.Tensor:
         samples = self.exp_buffer.sample(self.parameters['batch_size'])
+        dones = th.bitwise_or(samples.terminated, samples.truncated)
 
         states_action_values = self.model.q_values(samples.states).gather(1, samples.actions.unsqueeze(-1)).squeeze(-1)
         with th.no_grad():
             next_states_values = self.model.q_target(samples.next_states).max(1)[0]
-            expected_state_action_values = samples.rewards + ((~samples.dones) * self.parameters['gamma'] * next_states_values)
+            expected_state_action_values = samples.rewards + ((~dones) * self.parameters['gamma'] * next_states_values)
 
         return self.model.loss_func(states_action_values, expected_state_action_values).mean()
 
@@ -104,9 +105,8 @@ class DQNAgent(Agent):
         if self.parameters['num_timesteps'] % self.parameters['target_network_sync_freq'] == 0:
             self.model.sync()
 
-    def update(self, state, action, reward, done, next_state, info) -> None:
-        super().update(state, action, reward, done, next_state, info)
-        self.exp_buffer.add(state, action, reward, done, next_state)
+    def update(self, state, action, reward, terminated, truncated, next_state, info) -> None:
+        self.exp_buffer.add(state, action, reward, terminated, truncated, next_state)
 
     def save(self, directory, prefix="dqn", save_exp_buffer=True) -> None:
         if not os.path.isdir(directory):

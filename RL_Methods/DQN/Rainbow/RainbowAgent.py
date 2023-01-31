@@ -3,7 +3,7 @@ import numpy as np
 
 from RL_Methods.DQN.DQNAgent import DQNAgent
 from RL_Methods.DQN.Rainbow.RainbowModel import RainbowModel
-from RL_Methods.Buffers.PrioritizedReplayBuffer import PrioritizedReplayBuffer, OptimizedPrioritizedReplayBuffer
+from RL_Methods.Buffers.PrioritizedReplayBuffer import PrioritizedReplayBuffer
 from RL_Methods.DQN.Noisy.NoisyLinear import NoisyLinear, NoisyFactorizedLinear
 
 from RL_Methods.utils.Logger import Logger
@@ -79,6 +79,7 @@ class RainbowAgent(DQNAgent):
 
     def calculate_loss(self):
         samples = self.exp_buffer.sample(self.parameters['batch_size'], self.parameters['experience_beta'].get())
+        dones = th.bitwise_or(samples.terminated, samples.truncated)
 
         _, q_values_atoms = self.model.q_values(samples.states)
         state_action_values = q_values_atoms[range(samples.size), samples.actions]
@@ -91,7 +92,7 @@ class RainbowAgent(DQNAgent):
             next_distrib = th.softmax(next_q_atoms, dim=2)
             next_best_distrib = next_distrib[range(samples.size), next_actions]
 
-            projection = self.project_operator(next_best_distrib, samples.rewards, samples.dones)
+            projection = self.project_operator(next_best_distrib, samples.rewards, dones)
 
         loss_v = (-state_log_prob * projection).sum(dim=1)
         loss_v *= samples.weights
@@ -130,8 +131,8 @@ class RainbowAgent(DQNAgent):
 
     def beginEpisode(self):
         while(len(self.trajectory) > 0):
-            state, action, reward, done, next_state = self.getTrajectory()
-            self.exp_buffer.add(state, action, reward, done, next_state)
+            state, action, reward, terminated, truncated, next_state = self.getTrajectory()
+            self.exp_buffer.add(state, action, reward, terminated, truncated, next_state)
             self.trajectory.pop(0)
 
     def getTrajectory(self):
@@ -141,21 +142,22 @@ class RainbowAgent(DQNAgent):
         state = self.trajectory[0][0]
         action = self.trajectory[0][1]
         reward = 0
-        done = self.trajectory[0][3]
-        next_state = self.trajectory[-1][4]
+        terminated = self.trajectory[0][3]
+        truncated = self.trajectory[0][4]
+        next_state = self.trajectory[-1][5]
 
         for i in reversed(self.trajectory):
             reward = (reward * self.parameters['gamma']) + i[2]
         
-        return state, action, reward, done, next_state
+        return state, action, reward, terminated, truncated, next_state
 
-    def update(self, state, action, reward, done, next_state, info):
+    def update(self, state, action, reward, terminated, truncated, next_state, info):
         if len(self.trajectory) >= self.parameters['trajectory_steps']:
-            t_state, t_action, t_reward, t_done, t_next_state = self.getTrajectory()
-            self.exp_buffer.add(t_state, t_action, t_reward, t_done, t_next_state)
+            t_state, t_action, t_reward, t_terminated, t_truncated, t_next_state = self.getTrajectory()
+            self.exp_buffer.add(t_state, t_action, t_reward, t_terminated, t_truncated, t_next_state)
             self.trajectory.pop(0)
 
-        self.trajectory.append([state, action, reward, done, next_state])
+        self.trajectory.append([state, action, reward, terminated, truncated, next_state])
 
     def endEpisode(self):
         if self.parameters['verbose'] >= 1:
