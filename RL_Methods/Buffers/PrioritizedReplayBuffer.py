@@ -45,7 +45,7 @@ class PrioritizedReplayBuffer(ExperienceBuffer):
 
     def update_priorities(self, batch_indices, batch_priorities):
         for idx, prio in zip(batch_indices, batch_priorities):
-            prio_alpha = (prio**self.prob_alpha) + 1e-5
+            prio_alpha = np.clip((prio**self.prob_alpha), 1e-5, None)
             self.priorities[idx] = prio_alpha
             self.max_priority = max(prio_alpha, self.max_priority)
             self.min_priority = min(prio_alpha, self.min_priority)
