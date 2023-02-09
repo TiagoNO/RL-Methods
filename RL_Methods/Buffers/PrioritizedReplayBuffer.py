@@ -13,8 +13,7 @@ class PrioritizedReplayBuffer(ExperienceBuffer):
         super().__init__(max_sz, input_dim, device)
         self.prob_alpha = prob_alpha
         self.priorities = np.full((self.max_sz, ), fill_value=1e-5, dtype=np.float32)
-        self.max_priority = 1e-5
-        self.min_priority = 1
+        self.max_priority = 1
 
     def add(self, state, action, reward, terminated, truncated, next_state):
         self.priorities[self.pos] = self.max_priority
@@ -30,7 +29,7 @@ class PrioritizedReplayBuffer(ExperienceBuffer):
         sample_sz = min(self.curr_sz, batch_size)
         indices = np.random.choice(self.curr_sz, sample_sz, p=probs, replace=True)
         weights = (self.curr_sz * probs[indices]) ** (-beta)
-        weights /= max(1e-5, self.min_priority)
+        weights /= self.max_priority
 
         indices = th.from_numpy(indices).to(self.device)
         weights = th.from_numpy(weights).to(self.device)
@@ -52,4 +51,3 @@ class PrioritizedReplayBuffer(ExperienceBuffer):
             prio_alpha = np.clip((prio**self.prob_alpha), 1e-5, None)
             self.priorities[idx] = prio_alpha
             self.max_priority = max(prio_alpha, self.max_priority)
-            self.min_priority = min(prio_alpha, self.min_priority)
