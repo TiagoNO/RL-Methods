@@ -19,6 +19,7 @@ class Agent:
             self.callbacks = AgentStatisticsCallback()
         else:
             self.callbacks = ListCallback([AgentStatisticsCallback(), callbacks])
+        self.callbacks.set_agent(self)
 
         self.parameters = {}
         self.parameters['save_log_every'] = save_log_every

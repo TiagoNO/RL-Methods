@@ -55,9 +55,6 @@ class DQNAgent(Agent):
         self.loss_mean = 0
         self.loss_count = 0
 
-        if not self.callbacks is None:
-            self.callbacks.set_agent(self)
-
     def getAction(self, state, mask=None, deterministic=False) -> int:
         if mask is None:
             mask = np.ones(self.model.action_dim, dtype=bool)
