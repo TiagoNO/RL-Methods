@@ -1,11 +1,11 @@
 import torch as th
-import numpy as np
+import time
 
 from RL_Methods.DQN.DQNAgent import DQNAgent
 from RL_Methods.DQN.Distributional.DistributionalModel import DistributionalModel
 from RL_Methods.utils.Schedule import Schedule
 from RL_Methods.utils.Callback import Callback
-from RL_Methods.utils.Logger import Logger
+from RL_Methods.utils.Logger import Logger, LogLevel
 
 
 class DistributionalDQNAgent(DQNAgent):
@@ -28,7 +28,7 @@ class DistributionalDQNAgent(DQNAgent):
                     logger: Logger = None,
                     save_log_every: int = 100,
                     device: str = 'cpu',
-                    verbose: int = 0
+                    verbose: LogLevel = LogLevel.INFO
                 ):
         super().__init__(
                         input_dim=input_dim, 
@@ -76,7 +76,7 @@ class DistributionalDQNAgent(DQNAgent):
         batch_size = len(rewards)
         projection = th.zeros((batch_size, self.model.n_atoms), device=self.model.device, dtype=th.float32)
 
-        atoms = (~dones.unsqueeze(1) * (self.parameters['gamma']**self.parameters['trajectory_steps']) * self.model.support_vector.unsqueeze(0))
+        atoms = (~dones.unsqueeze(1) * self.parameters['gamma'] * self.model.support_vector.unsqueeze(0))
         tz = th.clip(rewards.unsqueeze(1) + atoms, self.model.min_v, self.model.max_v)
         b = (tz - self.model.min_v) / self.model.delta
         low = th.floor(b).long()

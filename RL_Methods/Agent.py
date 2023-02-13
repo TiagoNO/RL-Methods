@@ -1,7 +1,7 @@
 from distutils.log import Log
 import numpy as np
 from RL_Methods.utils.Callback import Callback, AgentStatisticsCallback, ListCallback
-from RL_Methods.utils.Logger import Logger
+from RL_Methods.utils.Logger import Logger, LogLevel
 import gymnasium as gym
 import time
 
@@ -9,11 +9,12 @@ from RL_Methods.utils.Schedule import Schedule
 
 class Agent:
 
-    def __init__(self, callbacks : Callback = None, logger : Logger = None, save_log_every:int=100, verbose:int=0) -> None:
+    def __init__(self, callbacks : Callback = None, logger : Logger = None, save_log_every:int=100, verbose : LogLevel = LogLevel.INFO) -> None:
         if logger is None:
             self.logger = Logger(None)
         else:
             self.logger = logger
+        self.logger.setLevel(verbose)
 
         if callbacks is None:
             self.callbacks = AgentStatisticsCallback()
@@ -38,8 +39,8 @@ class Agent:
             'info':None,
         }
 
-    def log(self, name, value):
-        self.logger.log(name, value)
+    def log(self, level, name, value):
+        self.logger.log(level, name, value)
 
     def __str__(self) -> str:
         params = "{}:\n".format(self.__class__.__name__)
@@ -57,8 +58,8 @@ class Agent:
         pass
 
     def endEpisode(self):
-        self.log("train/episodes", self.parameters['num_episodes'])
-        self.log("train/timesteps", self.parameters['num_timesteps'])
+        self.log(LogLevel.INFO, "train/episodes", self.parameters['num_episodes'])
+        self.log(LogLevel.INFO, "train/timesteps", self.parameters['num_timesteps'])
         self.logger.print()
         if self.parameters['num_episodes'] % self.parameters['save_log_every'] == 0:
             self.logger.dump()

@@ -2,7 +2,7 @@ import torch as th
 
 from RL_Methods.DQN.DQNAgent import DQNAgent
 from RL_Methods.utils.Callback import Callback
-from RL_Methods.utils.Logger import Logger
+from RL_Methods.utils.Logger import Logger, LogLevel
 
 
 class MultiStepDQNAgent(DQNAgent):
@@ -23,7 +23,7 @@ class MultiStepDQNAgent(DQNAgent):
                     logger: Logger = None,
                     save_log_every=100,
                     device='cpu',
-                    verbose=0
+                    verbose: LogLevel = LogLevel.INFO
                 ):
         
         super().__init__(

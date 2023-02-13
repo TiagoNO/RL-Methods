@@ -1,4 +1,4 @@
-from RL_Methods.utils.Logger import Logger
+from RL_Methods.utils.Logger import Logger, LogLevel
 from RL_Methods.DQN.DQNAgent import DQNAgent
 from RL_Methods.utils.Callback import Callback
 from RL_Methods.DQN.Dueling.DuelingModel import DuelingModel
@@ -20,7 +20,7 @@ class DuelingDQNAgent(DQNAgent):
                     logger: Logger = None,
                     save_log_every=100,
                     device='cpu',
-                    verbose=0
+                    verbose: LogLevel = LogLevel.INFO
                 ):
                 
         super().__init__(

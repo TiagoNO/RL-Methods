@@ -1,5 +1,6 @@
 import os
 import numpy as np
+from RL_Methods.utils.Logger import LogLevel
 
 class Callback:
 
@@ -70,8 +71,8 @@ class AgentStatisticsCallback(Callback):
     def endEpisode(self):
         score =  np.sum(self.scores)
         self.ep_scores.append(score)
-        self.agent.logger.log("train/avg_ep_rewards", np.mean(self.ep_scores[-50:]))
-        self.agent.logger.update("train/ep_score", score)
+        self.agent.log(LogLevel.INFO, "train/avg_ep_rewards", np.mean(self.ep_scores[-50:]))
+        self.agent.logger.update(LogLevel.INFO, "train/ep_score", score)
         self.scores.clear()
 
 

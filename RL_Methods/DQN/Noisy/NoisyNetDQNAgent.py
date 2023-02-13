@@ -5,7 +5,7 @@ from RL_Methods.DQN.Noisy.NoisyLinear import NoisyLinear, NoisyFactorizedLinear
 from RL_Methods.utils.Schedule import LinearSchedule
 
 from RL_Methods.utils.Callback import Callback
-from RL_Methods.utils.Logger import Logger
+from RL_Methods.utils.Logger import Logger, LogLevel
 
 class NoisyNetDQNAgent(DQNAgent):
 
@@ -56,5 +56,5 @@ class NoisyNetDQNAgent(DQNAgent):
     def endEpisode(self):
         for idx, p in enumerate(self.model.q_net.modules()): 
             if type(p) == NoisyLinear or type(p) == NoisyFactorizedLinear:
-                self.log("parameters/layer_{}_avg_noisy".format(idx), p.sigma_weight.mean().item())
+                self.log(LogLevel.INFO, "parameters/layer_{}_avg_noisy".format(idx), p.sigma_weight.mean().item())
         super().endEpisode()

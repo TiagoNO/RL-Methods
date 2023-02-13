@@ -1,5 +1,12 @@
 import os
-import time
+from enum import Enum
+
+class LogLevel:
+    OFF = 0
+    INFO = 1
+    DEBUG = 2
+    ALL = 3
+
 class Logger:
 
     def __init__(self, log_filename : str = None) -> None:        
@@ -15,14 +22,25 @@ class Logger:
 
         self.data = {}
         self.tabs_exp = 55
+        self.level = LogLevel.INFO
 
-    def log(self, name, value):
+    def setLevel(self, level : LogLevel):
+        self.level = level
+
+    def log(self, level : LogLevel, name : str, value):
+        print(self.level, level)
+        if self.level < level:
+            return
+
         if name in self.data:
             self.data[name].append(value)
         else:
             self.data[name] = [value]
 
-    def update(self, name, value):
+    def update(self, level : LogLevel, name, value):
+        if self.level < level:
+            return
+
         self.data[name] = [value]
 
     def merge(self, values, target):

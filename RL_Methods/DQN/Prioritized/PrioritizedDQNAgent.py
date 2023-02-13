@@ -4,7 +4,7 @@ import torch as th
 
 from RL_Methods.utils.Callback import Callback
 from RL_Methods.utils.Schedule import Schedule
-from RL_Methods.utils.Logger import Logger
+from RL_Methods.utils.Logger import Logger, LogLevel
 import time
 
 class PrioritizedDQNAgent(DQNAgent):
@@ -26,7 +26,7 @@ class PrioritizedDQNAgent(DQNAgent):
                     logger: Logger = None,
                     save_log_every: int = 100,
                     device: str = 'cpu',
-                    verbose : int = 0
+                    verbose: LogLevel = LogLevel.INFO
                     ):
         super().__init__(
                         input_dim=input_dim, 
@@ -72,8 +72,8 @@ class PrioritizedDQNAgent(DQNAgent):
         return loss.mean()
 
     def endEpisode(self):
-        self.log("parameters/beta", self.parameters['experience_beta'].get())
-        self.log("time/sample_time", self.sample_time / self.count)
+        self.log(LogLevel.INFO, "parameters/beta", self.parameters['experience_beta'].get())
+        self.log(LogLevel.INFO, "time/sample_time", self.sample_time / self.count)
         self.sample_time = 0
         self.count = 1
         super().endEpisode()

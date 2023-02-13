@@ -6,7 +6,7 @@ from RL_Methods.DQN.Rainbow.RainbowModel import RainbowModel
 from RL_Methods.Buffers.PrioritizedReplayBuffer import PrioritizedReplayBuffer
 from RL_Methods.DQN.Noisy.NoisyLinear import NoisyLinear, NoisyFactorizedLinear
 
-from RL_Methods.utils.Logger import Logger
+from RL_Methods.utils.Logger import Logger, LogLevel
 from RL_Methods.utils.Callback import Callback
 from RL_Methods.utils.Schedule import LinearSchedule, Schedule
 
@@ -34,7 +34,7 @@ class RainbowAgent(DQNAgent):
                     save_log_every: int = 100,
                     device: str = 'cpu',
                     epsilon: Schedule = None,
-                    verbose: int = 0
+                    verbose: LogLevel = LogLevel.INFO
                     ):
 
         if epsilon is None:
@@ -161,16 +161,16 @@ class RainbowAgent(DQNAgent):
 
     def endEpisode(self):
         if self.parameters['verbose'] >= 1:
-            self.log("parameters/beta", self.parameters['experience_beta'].get())
+            self.log(LogLevel.INFO, "parameters/beta", self.parameters['experience_beta'].get())
             for idx, p in enumerate(self.model.features_extractor.modules()): 
                 if type(p) == NoisyLinear or type(p) == NoisyFactorizedLinear:
-                    self.log("parameters/feature_extractor_L{}_avg_noisy".format(idx), p.sigma_weight.mean().item())
+                    self.log(LogLevel.INFO, "parameters/feature_extractor_L{}_avg_noisy".format(idx), p.sigma_weight.mean().item())
 
             for idx, p in enumerate(self.model.advantage_net.modules()): 
                 if type(p) == NoisyLinear or type(p) == NoisyFactorizedLinear:
-                    self.log("parameters/advantage_L{}_avg_noisy".format(idx), p.sigma_weight.mean().item())
+                    self.log(LogLevel.INFO, "parameters/advantage_L{}_avg_noisy".format(idx), p.sigma_weight.mean().item())
 
             for idx, p in enumerate(self.model.value_net.modules()): 
                 if type(p) == NoisyLinear or type(p) == NoisyFactorizedLinear:
-                    self.log("parameters/value_L{}_avg_noisy".format(idx), p.sigma_weight.mean().item())
+                    self.log(LogLevel.INFO, "parameters/value_L{}_avg_noisy".format(idx), p.sigma_weight.mean().item())
         super().endEpisode()        

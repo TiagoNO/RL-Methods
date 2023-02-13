@@ -1,7 +1,7 @@
 from RL_Methods.Agent import Agent
 from RL_Methods.utils.Schedule import Schedule
 from RL_Methods.utils.Callback import Callback
-from RL_Methods.utils.Logger import Logger
+from RL_Methods.utils.Logger import Logger, LogLevel
 
 import numpy as np
 
@@ -15,7 +15,7 @@ class QLearningAgent (Agent):
                 callbacks : Callback = None, 
                 logger : Logger = None, 
                 save_log_every : int = 100, 
-                verbose : int = 0
+                verbose: LogLevel = LogLevel.INFO
                 ):
         super().__init__(callbacks, logger, save_log_every, verbose)
         self.q_table = {}
@@ -57,7 +57,7 @@ class QLearningAgent (Agent):
 
         next_q_value = self.getBestQValue(new_state_n)
         self.q_table[state_n][action] = (1 - self.lr.get()) * self.q_table[state_n][action] + self.lr.get() * (reward + self.discount * next_q_value)
-        self.logger.log("epsilon", self.epsilon.get())
-        self.logger.log("learning_rate", self.lr.get())
+        self.logger.log(LogLevel.INFO, "epsilon", self.epsilon.get())
+        self.logger.log(LogLevel.INFO, "learning_rate", self.lr.get())
         self.epsilon.update()
         self.lr.update()

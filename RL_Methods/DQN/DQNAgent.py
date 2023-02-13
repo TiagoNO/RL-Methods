@@ -8,7 +8,7 @@ from RL_Methods.DQN.DQNModel import DQNModel
 from RL_Methods.Buffers.ExperienceBuffer import ExperienceBuffer
 from RL_Methods.utils.Callback import Callback
 from RL_Methods.utils.Schedule import Schedule
-from RL_Methods.utils.Logger import Logger
+from RL_Methods.utils.Logger import Logger, LogLevel
 from RL_Methods.utils.Common import unzip_files, zip_files
 
 class DQNAgent(Agent):
@@ -28,7 +28,7 @@ class DQNAgent(Agent):
                     logger: Logger = None,
                     save_log_every: int = 100,
                     device: str = 'cpu',
-                    verbose: int = 0
+                    verbose: LogLevel = LogLevel.INFO
                 ):        
 
         super(DQNAgent, self).__init__(
@@ -56,17 +56,17 @@ class DQNAgent(Agent):
         self.loss_count = 0
 
     def getAction(self, state, mask=None, deterministic=False) -> int:
+        action = -1
         if mask is None:
             mask = np.ones(self.model.action_dim, dtype=bool)
 
         if np.random.rand() < self.parameters['epsilon'].get() and not deterministic:
             prob = np.array(mask, dtype=np.float32) / np.sum(mask)
-            return np.random.choice(self.model.action_dim, 1, p=prob).item()
+            action = np.random.choice(self.model.action_dim, 1, p=prob).item()
         else:
-            self.model.eval()
             state = th.from_numpy(state).to(self.model.device)
             action = self.model.predict(state, deterministic, mask=np.invert(mask))
-            return action
+        return action
 
     def calculate_loss(self) -> th.Tensor:
         samples = self.exp_buffer.sample(self.parameters['batch_size'])
@@ -198,10 +198,10 @@ class DQNAgent(Agent):
 
 
     def endEpisode(self):
-        self.log("parameters/learning_rate", self.parameters['learning_rate'].get())
-        self.log("parameters/epsilon", self.parameters['epsilon'].get())
+        self.log(LogLevel.INFO, "parameters/learning_rate", self.parameters['learning_rate'].get())
+        self.log(LogLevel.INFO, "parameters/epsilon", self.parameters['epsilon'].get())
         if(self.loss_count > 0):
-            self.log("train/loss_mean", self.loss_mean / self.loss_count)
+            self.log(LogLevel.INFO, "train/loss_mean", self.loss_mean / self.loss_count)
 
         self.loss_mean = 0
         self.loss_count = 0
