@@ -28,7 +28,6 @@ class Logger:
         self.level = level
 
     def log(self, level : LogLevel, name : str, value):
-        print(self.level, level)
         if self.level < level:
             return
 
