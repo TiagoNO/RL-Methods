@@ -64,6 +64,7 @@ class DQNAgent(Agent):
             prob = np.array(mask, dtype=np.float32) / np.sum(mask)
             action = np.random.choice(self.model.action_dim, 1, p=prob).item()
         else:
+            self.model.train(False)
             state = th.from_numpy(state).to(self.model.device)
             action = self.model.predict(state, deterministic, mask=np.invert(mask))
         return action

@@ -87,7 +87,7 @@ class DQNModel(nn.Module):
 
     def predict(self, state, deterministic=False, mask=None):
         with th.no_grad():
-            q_val = self.q_values(state)
+            q_val = self.q_values(state.unsqueeze(0)).squeeze(0)
             if not mask is None:
                 q_val[mask] = -th.inf
             return q_val.argmax().item()
