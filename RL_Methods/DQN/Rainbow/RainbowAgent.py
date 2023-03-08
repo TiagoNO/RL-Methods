@@ -161,16 +161,16 @@ class RainbowAgent(DQNAgent):
 
     def endEpisode(self):
         if self.parameters['verbose'] >= 1:
-            self.log(LogLevel.INFO, "parameters/beta", self.parameters['experience_beta'].get())
+            self.log(LogLevel.DEBUG, "parameters/beta", self.parameters['experience_beta'].get())
             for idx, p in enumerate(self.model.features_extractor.modules()): 
                 if type(p) == NoisyLinear or type(p) == NoisyFactorizedLinear:
-                    self.log(LogLevel.INFO, "parameters/feature_extractor_L{}_avg_noisy".format(idx), p.sigma_weight.mean().item())
+                    self.log(LogLevel.DEBUG, "parameters/feature_extractor_L{}_avg_noisy".format(idx), p.sigma_weight.mean().item())
 
             for idx, p in enumerate(self.model.advantage_net.modules()): 
                 if type(p) == NoisyLinear or type(p) == NoisyFactorizedLinear:
-                    self.log(LogLevel.INFO, "parameters/advantage_L{}_avg_noisy".format(idx), p.sigma_weight.mean().item())
+                    self.log(LogLevel.DEBUG, "parameters/advantage_L{}_avg_noisy".format(idx), p.sigma_weight.mean().item())
 
             for idx, p in enumerate(self.model.value_net.modules()): 
                 if type(p) == NoisyLinear or type(p) == NoisyFactorizedLinear:
-                    self.log(LogLevel.INFO, "parameters/value_L{}_avg_noisy".format(idx), p.sigma_weight.mean().item())
+                    self.log(LogLevel.DEBUG, "parameters/value_L{}_avg_noisy".format(idx), p.sigma_weight.mean().item())
         super().endEpisode()        

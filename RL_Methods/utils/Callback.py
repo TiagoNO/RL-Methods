@@ -72,7 +72,7 @@ class AgentStatisticsCallback(Callback):
         score =  np.sum(self.scores)
         self.ep_scores.append(score)
         self.agent.log(LogLevel.INFO, "train/avg_ep_rewards", np.mean(self.ep_scores[-50:]))
-        self.agent.logger.update(LogLevel.INFO, "train/ep_score", score)
+        self.agent.log(LogLevel.INFO, "train/ep_score", score)
         self.scores.clear()
 
 
