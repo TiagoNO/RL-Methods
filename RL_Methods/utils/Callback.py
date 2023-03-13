@@ -102,4 +102,4 @@ class CheckpointCallback (Callback):
             self.agent.save(self.savedir + self.prefix + "_{}_steps".format(self.agent.parameters['num_timesteps']), prefix=self.prefix, save_exp_buffer=self.save_buffer)
 
     def endTrainning(self):
-        self.agent.save(self.savedir + self.prefix + "_last", prefix=self.prefix, save_exp_buffer=True)
+        self.agent.save(self.savedir + self.prefix + "_{}_steps".format(self.agent.parameters['num_timesteps']), prefix=self.prefix, save_exp_buffer=self.save_buffer)
