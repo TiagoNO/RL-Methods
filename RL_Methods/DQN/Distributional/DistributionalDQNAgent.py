@@ -1,6 +1,4 @@
 import torch as th
-import time
-
 from RL_Methods.DQN.DQNAgent import DQNAgent
 from RL_Methods.DQN.Distributional.DistributionalModel import DistributionalModel
 from RL_Methods.utils.Schedule import Schedule
