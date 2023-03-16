@@ -13,7 +13,7 @@ In this project there implementation of Reinforcement Learning methods. Currentl
 # TODO
 
 - [] Convolutional Policy
-- [] Distributed Methods
+- [] Distributed
 
 - [x] Q-Learning
     - [] Observation space discretization
@@ -27,6 +27,7 @@ In this project there implementation of Reinforcement Learning methods. Currentl
     - [x] Distributional
     - [x] Noisy
     - [x] Prioritized
+    - [] Boltzmann Softmax
     - [x] Rainbow
 
 - [] REINFORCE
@@ -34,3 +35,4 @@ In this project there implementation of Reinforcement Learning methods. Currentl
 - [] DDPG
 - [] A2C
 - [] A3C
+- [] TRPO
