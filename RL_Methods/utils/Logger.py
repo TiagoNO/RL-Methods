@@ -1,5 +1,4 @@
 import os
-from enum import Enum
 
 class LogLevel:
     OFF = 0

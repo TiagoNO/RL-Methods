@@ -1,7 +1,6 @@
 import os
 import numpy as np
 from RL_Methods.utils.Logger import LogLevel
-from collections import deque
 
 class Callback:
 
