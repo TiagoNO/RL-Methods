@@ -1,4 +1,3 @@
-import torchinfo
 import torch as th
 import torch.nn as nn
 import torch.optim as optim
@@ -57,9 +56,6 @@ class DQNModel(nn.Module):
         self.learning_rate.update()
         for g in self.optimizer.param_groups:
             g['lr'] = self.learning_rate.get()
-
-    def __str__(self) -> str:
-        return torchinfo.summary(self.q_net, self.input_dim, device=self.device).__str__()
 
     def forward(self, state):
         return self.q_net(state)

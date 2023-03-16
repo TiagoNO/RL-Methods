@@ -1,4 +1,3 @@
-import torchinfo
 import torch as th
 import torch.nn as nn
 from RL_Methods.DQN.DQNModel import DQNModel
@@ -29,9 +28,6 @@ class DistributionalModel(DQNModel):
         self.softmax = nn.Softmax(dim=2).to(device)
 
         return net.float().to(device)
-
-    def __str__(self) -> str:
-        return torchinfo.summary(self.q_net, self.input_dim, device=self.device).__str__()
 
     def forward(self, state):
         batch_sz = state.shape[0]

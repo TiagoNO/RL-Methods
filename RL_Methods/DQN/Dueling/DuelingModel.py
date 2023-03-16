@@ -3,7 +3,6 @@ import torch.nn as nn
 import torch.optim as optim
 
 import itertools
-import torchinfo
 
 from RL_Methods.utils.Schedule import Schedule
 from RL_Methods.DQN.DQNModel import DQNModel
@@ -81,12 +80,6 @@ class DuelingModel(DQNModel):
     def q_target(self, state):
         advantage, value = self.target_forward(state)
         return value + (advantage - th.mean(advantage))
-
-    def __str__(self) -> str:
-        features = torchinfo.summary(self.features_extractor, self.input_dim, device=self.device).__str__()
-        value = torchinfo.summary(self.value_net, 128, device=self.device).__str__()
-        advantage = torchinfo.summary(self.advantage_net, 128, device=self.device).__str__()
-        return features + value + advantage
 
     def sync(self):
         print("Sync target network...")
