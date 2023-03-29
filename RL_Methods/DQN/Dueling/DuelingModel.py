@@ -12,9 +12,6 @@ class DuelingModel(DQNModel):
     def __init__(self, input_dim, action_dim, learning_rate : Schedule, architecture, device) -> None:
         super(DuelingModel, self).__init__(input_dim, action_dim, learning_rate, architecture, device)
 
-    def _set_optmizer(self):
-        self.optimizer = optim.Adam(itertools.chain(self.features_extractor.parameters(), self.advantage_net.parameters(), self.value_net.parameters()), lr=self.learning_rate.get())
-
     def _create_online_network(self, achitecture, input_dim, action_dim, device):
         self.features_extractor, self.value_net, self.advantage_net = self._make_network(achitecture, input_dim, action_dim, device)
 

@@ -27,7 +27,7 @@ class DQNModel(nn.Module):
         self.loss_func = nn.MSELoss(reduction='none')
 
     def _set_optmizer(self):
-        self.optimizer = optim.Adam(self.q_net.parameters(), lr=self.learning_rate.get())
+        self.optimizer = optim.Adam(self.parameters(), lr=self.learning_rate.get())
 
     def _create_online_network(self, achitecture, input_dim, action_dim, device):
         self.q_net = self._make_network(achitecture, input_dim, action_dim, device)
@@ -51,6 +51,8 @@ class DQNModel(nn.Module):
         net.add_module("ouput", nn.Linear(last_dim, output_dim, bias=True))
         return net.float().to(device)
 
+    def clip_grad(self, grad_norm_lim):
+        th.nn.utils.clip_grad_norm_(self.parameters(), grad_norm_lim)
 
     def update_learning_rate(self):
         self.learning_rate.update()

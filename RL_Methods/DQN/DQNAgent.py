@@ -91,7 +91,7 @@ class DQNAgent(Agent):
         self.loss_count += 1
 
         loss.backward()
-        th.nn.utils.clip_grad_norm_(self.model.parameters(), self.parameters['grad_norm_clip'])
+        self.model.clip_grad(self.parameters['grad_norm_clip'])
         self.model.optimizer.step()
 
     def learn(self):
