@@ -2,7 +2,7 @@
 
 Reinforcement learning (RL) is an area of machine learning that deal with decision making processes. RL is defined by two basic components: Environment and Agent. Environment dictates the world and its rules. The agent is an entity that perceives the environment and can act based on what it saw. Each time the agent takes an action, the environment changes and it receives an reward based on that change. The goal of the agent is to maximize the total reward it receives over time.
 
-Firstly created for personal use and learning purposes. This project now has the objective to provide simple implementation of reinforcement learning methods. It was created to be as modular as possible, so each component could be easly modified. Currently there are two methods and improvements: Q-Learning and Deep Q Networks. In the future, new methods and features will be included as well as a wiki containing explanation of the methods and a documentation.
+Firstly created for personal use and learning purposes. This project now has the objective to provide simple implementation of reinforcement learning methods. It was created to be modular, so each component could be easly modified. Currently there are two methods and improvements: Q-Learning and Deep Q Networks. In the future, new methods and features will be included as well as a wiki containing explanation of the methods and a documentation.
 
 The methods interfaces are based on the gymnasium environments.
 
