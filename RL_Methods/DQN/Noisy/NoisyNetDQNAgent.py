@@ -50,11 +50,11 @@ class NoisyNetDQNAgent(DQNAgent):
                         verbose=verbose
                         )
 
-        self.parameters['sigma_init'] = sigma_init
+        self.data['parameters']['sigma_init'] = sigma_init
         self.model = NoisyModel(input_dim, action_dim, learning_rate, sigma_init, architecture, device)
 
     def endEpisode(self):
         for idx, p in enumerate(self.model.q_net.modules()): 
             if type(p) == NoisyLinear or type(p) == NoisyFactorizedLinear:
-                self.log(LogLevel.INFO, "parameters/layer_{}_avg_noisy".format(idx), p.sigma_weight.mean().item())
+                self.log(LogLevel.DEBUG, "parameters/layer_{}_avg_noisy".format(idx), p.sigma_weight.mean().item())
         super().endEpisode()

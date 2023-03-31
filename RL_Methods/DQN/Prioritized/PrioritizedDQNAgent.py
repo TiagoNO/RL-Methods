@@ -45,8 +45,8 @@ class PrioritizedDQNAgent(DQNAgent):
                         device=device,
                         verbose=verbose
                         )
-        self.parameters['experience_beta'] = experience_beta
-        self.parameters['experience_prob_alpha'] = experience_prob_alpha
+        self.data['parameters']['experience_beta'] = experience_beta
+        self.data['parameters']['experience_prob_alpha'] = experience_prob_alpha
         self.exp_buffer = PrioritizedReplayBuffer(experience_buffer_size, input_dim, device, experience_prob_alpha)
         # self.exp_buffer = OptimizedPrioritizedReplayBuffer(experience_buffer_size, input_dim, device, experience_prob_alpha)
         self.sample_time = 0
@@ -54,7 +54,7 @@ class PrioritizedDQNAgent(DQNAgent):
 
     def calculate_loss(self):
         begin = time.time()
-        samples = self.exp_buffer.sample(self.parameters['batch_size'], self.parameters['experience_beta'].get())
+        samples = self.exp_buffer.sample(self.data['parameters']['batch_size'], self.data['parameters']['experience_beta'].get())
         dones = th.bitwise_or(samples.terminated, samples.truncated)
 
         self.sample_time += time.time() - begin
@@ -63,17 +63,17 @@ class PrioritizedDQNAgent(DQNAgent):
         states_action_values = self.model.q_values(samples.states).gather(1, samples.actions.unsqueeze(-1)).squeeze(-1)
         with th.no_grad():
             next_states_values = self.model.q_target(samples.next_states).max(1)[0]
-            expected_state_action_values = samples.rewards + ((~dones) * self.parameters['gamma'] * next_states_values)
+            expected_state_action_values = samples.rewards + ((~dones) * self.data['parameters']['gamma'] * next_states_values)
 
         loss = self.model.loss_func(states_action_values, expected_state_action_values)
         loss *= samples.weights
         self.exp_buffer.update_priorities(samples.indices, loss.detach().cpu().numpy())
-        self.parameters['experience_beta'].update()
+        self.data['parameters']['experience_beta'].update()
         return loss.mean()
 
     def endEpisode(self):
-        self.log(LogLevel.INFO, "parameters/beta", self.parameters['experience_beta'].get())
-        self.log(LogLevel.INFO, "time/sample_time", self.sample_time / self.count)
+        self.log(LogLevel.INFO, "parameters/beta", self.data['parameters']['experience_beta'].get())
+        self.log(LogLevel.DEBUG, "time/sample_time", self.sample_time / self.count)
         self.sample_time = 0
         self.count = 1
         super().endEpisode()

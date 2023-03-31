@@ -42,5 +42,5 @@ class DuelingDQNAgent(DQNAgent):
                         )
 
         self.model = DuelingModel(input_dim, action_dim, learning_rate, architecture, device)
-        self.parameters['architecture'] = architecture
+        self.data['parameters']['architecture'] = architecture
 

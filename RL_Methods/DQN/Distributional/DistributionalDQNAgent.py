@@ -45,13 +45,13 @@ class DistributionalDQNAgent(DQNAgent):
                         device=device,
                         verbose=verbose
                         )
-        self.parameters['n_atoms'] = n_atoms
-        self.parameters['min_value'] = min_value
-        self.parameters['max_value'] = max_value
+        self.data['parameters']['n_atoms'] = n_atoms
+        self.data['parameters']['min_value'] = min_value
+        self.data['parameters']['max_value'] = max_value
         self.model = DistributionalModel(input_dim, action_dim, learning_rate, n_atoms, min_value, max_value, architecture, device)
 
     def calculate_loss(self):
-        samples = self.exp_buffer.sample(self.parameters['batch_size'])
+        samples = self.exp_buffer.sample(self.data['parameters']['batch_size'])
         dones = th.bitwise_or(samples.terminated, samples.truncated)
 
         # calculating q_values distribution
@@ -74,7 +74,7 @@ class DistributionalDQNAgent(DQNAgent):
         batch_size = len(rewards)
         projection = th.zeros((batch_size, self.model.n_atoms), device=self.model.device, dtype=th.float32)
 
-        atoms = (~dones.unsqueeze(1) * self.parameters['gamma'] * self.model.support_vector.unsqueeze(0))
+        atoms = (~dones.unsqueeze(1) * self.data['parameters']['gamma'] * self.model.support_vector.unsqueeze(0))
         tz = th.clip(rewards.unsqueeze(1) + atoms, self.model.min_v, self.model.max_v)
         b = (tz - self.model.min_v) / self.model.delta
         low = th.floor(b).long()

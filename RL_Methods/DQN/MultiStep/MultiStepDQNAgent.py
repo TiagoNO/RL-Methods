@@ -45,7 +45,7 @@ class MultiStepDQNAgent(DQNAgent):
                         )
 
         self.trajectory = []
-        self.parameters['trajectory_steps'] = trajectory_steps
+        self.data['parameters']['trajectory_steps'] = trajectory_steps
 
     def beginEpisode(self):
         while(len(self.trajectory) > 0):
@@ -65,12 +65,12 @@ class MultiStepDQNAgent(DQNAgent):
         next_state = self.trajectory[-1][5]
 
         for i in reversed(self.trajectory):
-            reward = (reward * self.parameters['gamma']) + i[2]
+            reward = (reward * self.data['parameters']['gamma']) + i[2]
         
         return state, action, reward, terminated, truncated, next_state
 
     def calculate_loss(self):
-        samples = self.exp_buffer.sample(self.parameters['batch_size'])
+        samples = self.exp_buffer.sample(self.data['parameters']['batch_size'])
         dones = th.bitwise_or(samples.terminated, samples.truncated)
         
         # calculating q-values for states
@@ -83,13 +83,13 @@ class MultiStepDQNAgent(DQNAgent):
             next_states_values = self.model.q_target(samples.next_states).max(1)[0]
 
             # Calculating the target values (Q(s_next, a) = 0 if state is terminal)
-            gamma = self.parameters['gamma']**self.parameters['trajectory_steps']
+            gamma = self.data['parameters']['gamma']**self.data['parameters']['trajectory_steps']
             expected_state_action_values = samples.rewards + ((~dones) * gamma * next_states_values)
 
         return self.model.loss_func(states_action_values, expected_state_action_values).mean()
 
     def update(self, state, action, reward, terminated, truncated, next_state, info):
-        if len(self.trajectory) >= self.parameters['trajectory_steps']:
+        if len(self.trajectory) >= self.data['parameters']['trajectory_steps']:
             t_state, t_action, t_reward, t_terminated, t_truncated, t_next_state = self.getTrajectory()
             self.exp_buffer.add(t_state, t_action, t_reward, t_terminated, t_truncated, t_next_state)
             self.trajectory.pop(0)

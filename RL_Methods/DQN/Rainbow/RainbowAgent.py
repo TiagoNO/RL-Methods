@@ -63,22 +63,22 @@ class RainbowAgent(DQNAgent):
         self.exp_buffer = PrioritizedReplayBuffer(experience_buffer_size, input_dim, device, experience_prob_alpha)
         self.model = RainbowModel(input_dim, action_dim, learning_rate, sigma_init, n_atoms, min_value, max_value, architecture, device)
 
-        self.parameters['sigma_init'] = sigma_init
-        self.parameters['n_atoms'] = n_atoms
-        self.parameters['min_value'] = min_value
-        self.parameters['max_value'] = max_value
+        self.data['parameters']['sigma_init'] = sigma_init
+        self.data['parameters']['n_atoms'] = n_atoms
+        self.data['parameters']['min_value'] = min_value
+        self.data['parameters']['max_value'] = max_value
 
-        self.parameters['experience_beta'] = experience_beta
-        self.parameters['experience_prob_alpha'] = experience_prob_alpha
+        self.data['parameters']['experience_beta'] = experience_beta
+        self.data['parameters']['experience_prob_alpha'] = experience_prob_alpha
 
         self.trajectory = []
-        self.parameters['trajectory_steps'] = trajectory_steps
-        self.parameters['architecture'] = architecture
+        self.data['parameters']['trajectory_steps'] = trajectory_steps
+        self.data['parameters']['architecture'] = architecture
 
 
 
     def calculate_loss(self):
-        samples = self.exp_buffer.sample(self.parameters['batch_size'], self.parameters['experience_beta'].get())
+        samples = self.exp_buffer.sample(self.data['parameters']['batch_size'], self.data['parameters']['experience_beta'].get())
         dones = th.bitwise_or(samples.terminated, samples.truncated)
 
         _, q_values_atoms = self.model.q_values(samples.states)
@@ -98,14 +98,14 @@ class RainbowAgent(DQNAgent):
         loss_v *= samples.weights
 
         self.exp_buffer.update_priorities(samples.indices, loss_v.detach().cpu().numpy())
-        self.parameters['experience_beta'].update()
+        self.data['parameters']['experience_beta'].update()
         return loss_v.mean()
 
     def project_operator(self, distrib, rewards, dones):
         batch_size = len(rewards)
         projection = th.zeros((batch_size, self.model.n_atoms), device=self.model.device, dtype=th.float32)
 
-        atoms = (~dones.unsqueeze(1) * (self.parameters['gamma']**self.parameters['trajectory_steps']) * self.model.support_vector.unsqueeze(0))
+        atoms = (~dones.unsqueeze(1) * (self.data['parameters']['gamma']**self.data['parameters']['trajectory_steps']) * self.model.support_vector.unsqueeze(0))
         tz = th.clip(rewards.unsqueeze(1) + atoms, self.model.min_v, self.model.max_v)
         b = (tz - self.model.min_v) / self.model.delta
         low = th.floor(b).long()
@@ -147,12 +147,12 @@ class RainbowAgent(DQNAgent):
         next_state = self.trajectory[-1][5]
 
         for i in reversed(self.trajectory):
-            reward = (reward * self.parameters['gamma']) + i[2]
+            reward = (reward * self.data['parameters']['gamma']) + i[2]
         
         return state, action, reward, terminated, truncated, next_state
 
     def update(self, state, action, reward, terminated, truncated, next_state, info):
-        if len(self.trajectory) >= self.parameters['trajectory_steps']:
+        if len(self.trajectory) >= self.data['parameters']['trajectory_steps']:
             t_state, t_action, t_reward, t_terminated, t_truncated, t_next_state = self.getTrajectory()
             self.exp_buffer.add(t_state, t_action, t_reward, t_terminated, t_truncated, t_next_state)
             self.trajectory.pop(0)
@@ -160,8 +160,8 @@ class RainbowAgent(DQNAgent):
         self.trajectory.append([state, action, reward, terminated, truncated, next_state])
 
     def endEpisode(self):
-        if self.parameters['verbose'] >= 1:
-            self.log(LogLevel.DEBUG, "parameters/beta", self.parameters['experience_beta'].get())
+        if self.data['parameters']['verbose'] >= 1:
+            self.log(LogLevel.DEBUG, "parameters/beta", self.data['parameters']['experience_beta'].get())
             for idx, p in enumerate(self.model.features_extractor.modules()): 
                 if type(p) == NoisyLinear or type(p) == NoisyFactorizedLinear:
                     self.log(LogLevel.DEBUG, "parameters/feature_extractor_L{}_avg_noisy".format(idx), p.sigma_weight.mean().item())

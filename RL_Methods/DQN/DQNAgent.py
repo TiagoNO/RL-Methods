@@ -24,30 +24,28 @@ class DQNAgent(Agent):
                     target_network_sync_freq : int, 
                     grad_norm_clip: float = 1,
                     architecture: dict = None,
-                    callbacks: Callback = None,
-                    logger: Logger = None,
-                    save_log_every: int = 100,
-                    device: str = 'cpu',
-                    verbose: LogLevel = LogLevel.INFO
+                    device : str = 'cpu',
+                    callbacks : Callback = None, 
+                    logger : Logger = None, 
+                    save_log_every:int=100, 
+                    verbose : LogLevel = LogLevel.INFO
                 ):        
-
-        super(DQNAgent, self).__init__(
-            callbacks=callbacks, 
-            logger=logger, 
-            save_log_every=save_log_every,
-            verbose=verbose
-            )
-
-        self.parameters['input_dim'] = input_dim
-        self.parameters['action_dim'] = action_dim
-        self.parameters['learning_rate'] = learning_rate
-        self.parameters['epsilon'] = epsilon
-        self.parameters['gamma'] = gamma
-        self.parameters['batch_size'] = batch_size
-        self.parameters['experience_buffer_size'] = experience_buffer_size
-        self.parameters['target_network_sync_freq'] = target_network_sync_freq
-        self.parameters['grad_norm_clip'] = grad_norm_clip
-        self.parameters['architecture']= architecture
+        super().__init__(
+                callbacks=callbacks,
+                logger=logger, 
+                save_log_every=save_log_every, 
+                verbose=verbose
+                )
+        self.data['parameters']['input_dim'] = input_dim
+        self.data['parameters']['action_dim'] = action_dim
+        self.data['parameters']['learning_rate'] = learning_rate
+        self.data['parameters']['epsilon'] = epsilon
+        self.data['parameters']['gamma'] = gamma
+        self.data['parameters']['batch_size'] = batch_size
+        self.data['parameters']['experience_buffer_size'] = experience_buffer_size
+        self.data['parameters']['target_network_sync_freq'] = target_network_sync_freq
+        self.data['parameters']['grad_norm_clip'] = grad_norm_clip
+        self.data['parameters']['architecture']= architecture
 
         self.model = DQNModel(input_dim, action_dim, learning_rate, architecture, device)
         self.exp_buffer = ExperienceBuffer(experience_buffer_size, input_dim, device)      
@@ -60,7 +58,7 @@ class DQNAgent(Agent):
         if mask is None:
             mask = np.ones(self.model.action_dim, dtype=bool)
 
-        if np.random.rand() < self.parameters['epsilon'].get() and not deterministic:
+        if np.random.rand() < self.data['parameters']['epsilon'].get() and not deterministic:
             prob = np.array(mask, dtype=np.float32) / np.sum(mask)
             action = np.random.choice(self.model.action_dim, 1, p=prob).item()
         else:
@@ -70,18 +68,18 @@ class DQNAgent(Agent):
         return action
 
     def calculate_loss(self) -> th.Tensor:
-        samples = self.exp_buffer.sample(self.parameters['batch_size'])
+        samples = self.exp_buffer.sample(self.data['parameters']['batch_size'])
         dones = th.bitwise_or(samples.terminated, samples.truncated)
 
         states_action_values = self.model.q_values(samples.states).gather(1, samples.actions.unsqueeze(-1)).squeeze(-1)
         with th.no_grad():
             next_states_values = self.model.q_target(samples.next_states).max(1)[0]
-            expected_state_action_values = samples.rewards + ((~dones) * self.parameters['gamma'] * next_states_values)
+            expected_state_action_values = samples.rewards + ((~dones) * self.data['parameters']['gamma'] * next_states_values)
 
         return self.model.loss_func(states_action_values, expected_state_action_values).mean()
 
     def step(self) -> None:
-        if len(self.exp_buffer) < self.parameters['batch_size']:
+        if len(self.exp_buffer) < self.data['parameters']['batch_size']:
             return
 
         self.model.train(True)
@@ -91,42 +89,42 @@ class DQNAgent(Agent):
         self.loss_count += 1
 
         loss.backward()
-        self.model.clip_grad(self.parameters['grad_norm_clip'])
+        self.model.clip_grad(self.data['parameters']['grad_norm_clip'])
         self.model.optimizer.step()
 
     def learn(self):
         self.step()
-        self.parameters['epsilon'].update()
+        self.data['parameters']['epsilon'].update()
         self.model.update_learning_rate()
 
-        if self.parameters['num_timesteps'] % self.parameters['target_network_sync_freq'] == 0:
+        if self.data['num_timesteps'] % self.data['parameters']['target_network_sync_freq'] == 0:
             self.model.sync()
 
     def update(self, state, action, reward, terminated, truncated, next_state, info) -> None:
         self.exp_buffer.add(state, action, reward, terminated, truncated, next_state)
 
-    def save(self, directory, prefix="dqn", save_exp_buffer=True) -> None:
-        if not os.path.isdir(directory):
-            os.makedirs(directory)
+    def save(self, filename, save_exp_buffer=True) -> None:
+        directory = os.path.splitext(filename)[0]
+        prefix = os.path.basename(directory)
 
-        model_file = "{}/{}".format(directory, prefix)
-        parameters_file = "{}/{}_parameters".format(directory, prefix)
+        os.makedirs(directory)
+
+        model_file = "{}/{}_policy.pt".format(directory, prefix)
+        parameters_file = "{}/{}_data".format(directory, prefix)
         buffer_file = "{}/{}_buffer".format(directory, prefix)
         callback_file = "{}/{}_callback".format(directory, prefix)
     
         self.model.save(model_file)
-        params_f_ptr = open(parameters_file, "wb")
-        pickle.dump(self.parameters, params_f_ptr)
-        params_f_ptr.close()
+
+        with open(parameters_file, "wb") as params_f_ptr:
+            pickle.dump(self.data, params_f_ptr)
 
         if save_exp_buffer:
-            buffer_f_ptr = open(buffer_file, "wb")
-            pickle.dump(self.exp_buffer, buffer_f_ptr)
-            buffer_f_ptr.close()
+            with open(buffer_file, "wb") as buffer_f_ptr:
+                pickle.dump(self.exp_buffer, buffer_f_ptr)
 
-        callback_f_ptr = open(callback_file, "wb")
-        pickle.dump(self.callbacks, callback_f_ptr)
-        callback_f_ptr.close()
+        with open(callback_file, "wb") as callback_f_ptr:
+            pickle.dump(self.callbacks, callback_f_ptr)
 
         zip_files(directory, directory)
         for files in os.listdir(directory):
@@ -135,54 +133,38 @@ class DQNAgent(Agent):
 
     @classmethod
     def load(cls, filename, logger=None, callback=None, load_buffer=False, device='cpu') -> Agent:
-        directory = filename[:filename.rfind(".zip")]
+        directory, extension = os.path.splitext(filename)
+        prefix = os.path.basename(directory)
+        assert extension == '.zip'
+
         unzip_files(filename, directory)
 
-        name = filename[filename.rfind("/")+1:]
-        prefix = name[:name.find("_")]
-
-        model_file = "{}/{}".format(directory, prefix)
-        parameters_file = "{}/{}_parameters".format(directory, prefix)
+        model_file = "{}/{}_policy.pt".format(directory, prefix)
+        data_file = "{}/{}_data".format(directory, prefix)
         buffer_file = "{}/{}_buffer".format(directory, prefix)
         callback_file = "{}/{}_callback".format(directory, prefix)
 
-        parameters_f_ptr = open(parameters_file, "rb")
-        parameters = dict(pickle.load(parameters_f_ptr))
-        parameters_f_ptr.close()
+        with open(data_file, "rb") as data_f_ptr:
+            data = dict(pickle.load(data_f_ptr))
 
-        try:
-            if callback is None:
-                callback_f_ptr = open(callback_file, "rb")
+        if callback is None:
+            with open(callback_file, "rb") as callback_f_ptr:
                 callback = pickle.load(callback_f_ptr)
-                callback_f_ptr.close()
-        except Exception as e:
-            print("Could not load callbacks: {}".format(e))
-
-        try:
-            num_episodes = parameters.pop('num_episodes')
-            num_timesteps = parameters.pop('num_timesteps')
-        except:
-            num_episodes = 0
-            num_timesteps = 0
 
         agent = cls(
-            **parameters,
+            **data['parameters'],
             logger=logger,
             callbacks=callback,
             device=device
         )
-        agent.parameters['num_timesteps'] = num_timesteps
-        agent.parameters['num_episodes'] = num_episodes
+        agent.data['num_timesteps'] = data['num_timesteps']
+        agent.data['num_episodes'] = data['num_episodes']
 
         agent.model.load(model_file)
-        try:
-            if load_buffer:
-                buffer_f_ptr = open(buffer_file, "rb")
+        if load_buffer:
+            with open(buffer_file, "rb") as buffer_f_ptr:
                 agent.exp_buffer = pickle.load(open(buffer_file, "rb"))
                 agent.exp_buffer.device = device
-                buffer_f_ptr.close()
-        except Exception as e:
-            print("Could not load exp buffer: {}".format(e))
 
         for files in os.listdir(directory):
             os.remove(os.path.join(directory, files))
@@ -199,8 +181,8 @@ class DQNAgent(Agent):
 
 
     def endEpisode(self):
-        self.log(LogLevel.INFO, "parameters/learning_rate", self.parameters['learning_rate'].get())
-        self.log(LogLevel.INFO, "parameters/epsilon", self.parameters['epsilon'].get())
+        self.log(LogLevel.INFO, "parameters/learning_rate", self.data['parameters']['learning_rate'].get())
+        self.log(LogLevel.INFO, "parameters/epsilon", self.data['parameters']['epsilon'].get())
         if(self.loss_count > 0):
             self.log(LogLevel.INFO, "train/loss_mean", self.loss_mean / self.loss_count)
 

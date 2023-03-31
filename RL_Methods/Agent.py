@@ -9,7 +9,13 @@ from RL_Methods.utils.Schedule import Schedule
 
 class Agent:
 
-    def __init__(self, callbacks : Callback = None, logger : Logger = None, save_log_every:int=100, verbose : LogLevel = LogLevel.INFO) -> None:
+    def __init__(self, 
+                callbacks : Callback = None, 
+                logger : Logger = None, 
+                save_log_every:int=100, 
+                verbose : LogLevel = LogLevel.INFO
+                ):
+
         if logger is None:
             self.logger = Logger(None)
         else:
@@ -22,21 +28,25 @@ class Agent:
             self.callbacks = ListCallback([AgentStatisticsCallback(), callbacks])
         self.callbacks.set_agent(self)
 
-        self.parameters = {}
-        self.parameters['save_log_every'] = save_log_every
-        self.parameters['verbose'] = verbose
-        self.parameters['num_timesteps'] = 0
-        self.parameters['num_episodes'] = 1
         self.data = {
-            # curr data
-            'state':None,
-            'start_info':None,
-            'action':None,
-            'reward':None,
-            'terminated':False,
-            'truncated':False,
-            'next_state':None,
-            'info':None,
+            'parameters':{
+                'save_log_every' : save_log_every,
+                'verbose' : verbose,
+            },
+
+            'episode':{
+                'state':None,
+                'start_info':None,
+                'action':None,
+                'reward':None,
+                'terminated':False,
+                'truncated':False,
+                'next_state':None,
+                'info':None
+            },
+
+            'num_timesteps' : 0,
+            'num_episodes' : 0
         }
 
     def log(self, level, name, value):
@@ -44,8 +54,8 @@ class Agent:
 
     def __str__(self) -> str:
         params = "{}:\n".format(self.__class__.__name__)
-        for p in self.parameters:
-            params += "{}: {}\n".format(p, self.parameters[p])
+        for p in self.data['parameters']:
+            params += "{}: {}\n".format(p, self.data['parameters'][p])
         return params
 
     def beginTrainning(self):
@@ -58,10 +68,10 @@ class Agent:
         pass
 
     def endEpisode(self):
-        self.log(LogLevel.INFO, "train/episodes", self.parameters['num_episodes'])
-        self.log(LogLevel.INFO, "train/timesteps", self.parameters['num_timesteps'])
+        self.log(LogLevel.INFO, "train/episodes", self.data['num_episodes'])
+        self.log(LogLevel.INFO, "train/timesteps", self.data['num_timesteps'])
         self.logger.print()
-        if self.parameters['num_episodes'] % self.parameters['save_log_every'] == 0:
+        if self.data['num_episodes'] % self.data['parameters']['save_log_every'] == 0:
             self.logger.dump()
 
     def update(self, state, action, reward, terminated, truncated, next_state, info):
@@ -79,7 +89,7 @@ class Agent:
         self.beginTrainning()
         self.callbacks.beginTrainning()
         
-        while self.parameters['num_timesteps'] < total_timesteps:
+        while self.data['num_timesteps'] < total_timesteps:
             obs, start_info = env.reset()
 
             done = False
@@ -114,10 +124,10 @@ class Agent:
 
                 score += reward
                 obs = obs_     
-                self.parameters['num_timesteps'] += 1
+                self.data['num_timesteps'] += 1
 
             self.callbacks.endEpisode()
-            self.parameters['num_episodes'] += 1
+            self.data['num_episodes'] += 1
 
             self.endEpisode()
 

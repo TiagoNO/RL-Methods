@@ -66,7 +66,7 @@ class AgentStatisticsCallback(Callback):
         self.ep_scores = []
 
     def update(self):
-        self.scores.append(self.agent.data['reward'])
+        self.scores.append(self.agent.data['episode']['reward'])
 
     def endEpisode(self):
         score =  np.sum(self.scores)
@@ -82,23 +82,18 @@ class AgentStatisticsCallback(Callback):
 
 class CheckpointCallback (Callback):
 
-    def __init__(self, savedir, prefix, checkpoint_freq, save_buffer=False) -> None:
-        self.savedir = savedir
-        self.prefix = prefix
+    def __init__(self, filename, directory, checkpoint_freq, save_buffer=False) -> None:        
+        self.directory = directory
+        self.filename = os.path.join(directory, os.path.splitext(filename)[0])
         self.checkpoint_freq = checkpoint_freq
         self.save_buffer = save_buffer
 
-        if not os.path.isdir(self.savedir):
-            os.makedirs(self.savedir)
+        if not os.path.isdir(self.directory):
+            os.makedirs(self.directory)
 
-    def beginTrainning(self):
-        f = open(self.savedir + self.prefix + "_experiment_info.txt", "w")
-        f.write(self.agent.__str__())
-        f.close()
-
-    def update(self):
-        if self.agent.parameters['num_timesteps'] % self.checkpoint_freq == 0 and self.agent.parameters['num_timesteps'] > 0:
-            self.agent.save(self.savedir + self.prefix + "_{}_steps".format(self.agent.parameters['num_timesteps']), prefix=self.prefix, save_exp_buffer=self.save_buffer)
+    def update(self):   
+        if self.agent.data['num_timesteps'] % self.checkpoint_freq == 0 and self.agent.data['num_timesteps'] > 0:
+            self.agent.save("{}_{}_steps".format(self.filename, self.agent.data['num_timesteps']), save_exp_buffer=self.save_buffer)
 
     def endTrainning(self):
-        self.agent.save(self.savedir + self.prefix + "_{}_steps".format(self.agent.parameters['num_timesteps']), prefix=self.prefix, save_exp_buffer=self.save_buffer)
+        self.agent.save("{}_{}_steps".format(self.filename, self.agent.data['num_timesteps']), save_exp_buffer=self.save_buffer)
