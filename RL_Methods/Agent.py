@@ -96,8 +96,8 @@ class Agent:
             action_mask = None
             score = 0
 
-            self.data['state'] = obs
-            self.data['start_info'] = start_info
+            self.data['episode']['state'] = obs
+            self.data['episode']['start_info'] = start_info
 
             self.beginEpisode()
             self.callbacks.beginEpisode()
@@ -111,13 +111,13 @@ class Agent:
                     action_mask = info['mask']
 
                 self.update(obs, action, reward, terminated, truncated, obs_, info)
-                self.data['state'] = obs
-                self.data['action'] = action
-                self.data['reward'] = reward
-                self.data['terminated'] = terminated
-                self.data['truncated'] = truncated
-                self.data['next_state'] = obs_
-                self.data['info'] = info
+                self.data['episode']['state'] = obs
+                self.data['episode']['action'] = action
+                self.data['episode']['reward'] = reward
+                self.data['episode']['terminated'] = terminated
+                self.data['episode']['truncated'] = truncated
+                self.data['episode']['next_state'] = obs_
+                self.data['episode']['info'] = info
 
                 self.callbacks.update()
 
